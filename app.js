@@ -32,6 +32,7 @@ const appState = {state: APPSTATE.IDLE}
 class Node {
     constructor(row, col) {
         this.id = `${row}_${col}`
+        this.DOMNode = null;
         this.row = row;
         this.col = col;
         this.isWall = false;
@@ -69,38 +70,37 @@ class Node {
         const {row, col} = node;
         return document.getElementById(`${row}_${col}`)
     }
+
+    static setWall(DOMNode) {
+        const node = DOMNode.node;
+        const isWall = node.isWall;
+        if (isWall) {
+            DOMNode.removeAttribute('isWall');
+            node.isWall = false;
+        } else { 
+            DOMNode.setAttribute('isWall', true);
+            node.isWall = true;
+        }
+    }
     
 }
 
 // event handlers for DOM Nodes
 const nodeEventHandlers = {
+    // ENTER
     MouseEnter: function(DOMNode, evt) {
         handleMouseState(evt);
-        const row = DOMNode.row;
-        const col = DOMNode.col;
         // wall drawing
         if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-            const isWall = DOMNode.isWall;
-            if (isWall)
-                DOMNode.removeAttribute('isWall');
-            else 
-                DOMNode.setAttribute('isWall', true);
-            console.log("MOUSEENTER: ", evt, row, col);
+            Node.setWall(DOMNode)
         }
     },
+    // DOWN
     MouseDown: function(DOMNode, evt) {
         handleMouseState(evt);
-        const row = DOMNode.row;
-        const col = DOMNode.col;
-
         // wall drawing
         if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-            const isWall = DOMNode.isWall;
-            if (isWall)
-                DOMNode.removeAttribute('isWall');
-            else 
-                DOMNode.setAttribute('isWall', true);
-            console.log("MOUSEDOWN: ", evt, row, col, isWall);
+            Node.setWall(DOMNode);
         }
 
         // select start
@@ -111,12 +111,12 @@ const nodeEventHandlers = {
                 startNode = null;
             } else {
                 DOMNode.setAttribute('isStart', true);
-                startNode = nodes[row][col];
+                startNode = DOMNOde.node;
                 if (prevNode) prevNode.removeAttribute('isStart');
                 prevNode = Node.getDOMNode(startNode);
                 console.log(prevNode)
             }
-            console.log("MOUSEDOWN: ", evt, row, col, isStart);
+            console.log("MOUSEDOWN: ", evt);
         }
 
          // select end
@@ -127,11 +127,11 @@ const nodeEventHandlers = {
                 endNode = null;
             } else {
                 DOMNode.setAttribute('isEnd', true);
-                endNode = nodes[row][col];
+                endNode = DOMNode.node;
                 if (prevNode) prevNode.removeAttribute('isEnd');
                 prevNode = Node.getDOMNode(endNode);
             }
-            console.log("MOUSEDOWN: ", evt, row, col, isEnd);
+            console.log("MOUSEDOWN: ", evt);
         }
     }
 }
@@ -158,6 +158,7 @@ function generateGrid(nodeSize) {
         for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
             const newNode = new Node(row, col)
             const newDOMNode = new DOMNode(newNode, mouseState, appState, nodeEventHandlers);
+            newNode.DOMNode = newDOMNode;
             newDOMNode.id = `${row}_${col}`;
             newDOMNode.setAttribute('size', nodeSize);
             newDOMRow.appendChild(newDOMNode); // DOM node

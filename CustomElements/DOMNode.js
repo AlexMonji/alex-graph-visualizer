@@ -7,6 +7,7 @@ class DOMNode extends HTMLDivElement {
         this.className = "node noDrag";
         this.row = node.row;
         this.col = node.col;
+        this.node = node;
         this.addEventListener("mouseenter", (evt) => nodeEventHandlers.MouseEnter(this, evt));
         this.addEventListener("mousedown",  (evt) => nodeEventHandlers.MouseDown(this, evt));
     }
