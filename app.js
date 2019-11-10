@@ -1,34 +1,10 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
 
-
-
-
-
 //Node(row, col)
 //  clearAttributes(node)
 //  getNeighbors(node)
 //  getDOMNode(node)
-
-//generateGrid(nodeSize)
-//handleGridSize(nodeSize)
-//clearGrid
-
-//handleMouseState(evt)
-//handleAppState(evt, state)
-
-// state
-const APPSTATE = Object.freeze({DRAW_WALL: "DRAW_WALL", IDLE: "IDLE", SELECT_START: "SELECT_START", SELECT_END: "SELECT_END"})
-const nodes = [];
-const DOMNodes = [];
-let startNode = null;
-let endNode = null;
-let prevNode = null;
-
-const mouseState = {mouseDown: false}
-const appState = {state: APPSTATE.IDLE}
-
-// node data template and manipulation
 class Node {
     constructor(row, col) {
         this.id = `${row}_${col}`
@@ -82,124 +58,92 @@ class Node {
             node.isWall = true;
         }
     }
-    
 }
 
-// event handlers for DOM Nodes
-const nodeEventHandlers = {
-    // ENTER
-    MouseEnter: function(DOMNode, evt) {
-        handleMouseState(evt);
-        // wall drawing
-        if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-            Node.setWall(DOMNode)
-        }
-    },
-    // DOWN
-    MouseDown: function(DOMNode, evt) {
-        handleMouseState(evt);
-        // wall drawing
-        if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-            Node.setWall(DOMNode);
-        }
+//Grid
+//  generateGrid(nodeSize)
+//  handleGridSize(nodeSize)
+//  clearGrid
+class Grid {
+    constructor(){
+        this.grid = document.getElementById("grid");
+        this.nodes = [];
+        this.DOMNodes = [];
+        this.startNode = null;
+        this.endNode = null;
+        this.prevNode = null;
+    }
 
-        // select start
-        if (appState.state === APPSTATE.SELECT_START && mouseState.mouseDown) {
-            const isStart = DOMNode.isStart;
-            if (isStart) {
-                DOMNode.removeAttribute('isStart');
-                startNode = null;
-            } else {
-                DOMNode.setAttribute('isStart', true);
-                startNode = DOMNOde.node;
-                if (prevNode) prevNode.removeAttribute('isStart');
-                prevNode = Node.getDOMNode(startNode);
-                console.log(prevNode)
-            }
-            console.log("MOUSEDOWN: ", evt);
-        }
+    generateGrid(nodeSize) {
+        // get grid dimensions
+        const gridDimensions = this.grid.getBoundingClientRect();
+        const gridWidth = gridDimensions.width;
+        const gridHeight = gridDimensions.height;
 
-         // select end
-         if (appState.state === APPSTATE.SELECT_END && mouseState.mouseDown) {
-            const isEnd = DOMNode.isEnd;
-            if (isEnd) {
-                DOMNode.removeAttribute('isEnd');
-                endNode = null;
-            } else {
-                DOMNode.setAttribute('isEnd', true);
-                endNode = DOMNode.node;
-                if (prevNode) prevNode.removeAttribute('isEnd');
-                prevNode = Node.getDOMNode(endNode);
-            }
-            console.log("MOUSEDOWN: ", evt);
+        // clear children
+        while (this.grid.firstChild) {
+            this.grid.removeChild(grid.firstChild);
         }
+        
+        // generate nodes and DOM for nodes
+        for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
+            const newDOMRow = new DOMRow(); // DOM grid
+            const nodeRow = [];
+            for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
+                const newNode = new Node(row, col)
+                const newDOMNode = new DOMNode(newNode);
+                newDOMNode.addEventListener("mouseenter", (evt) => MouseEnter(this.grid, newDOMNode, evt));
+                newDOMNode.addEventListener("mousedown",  (evt) => MouseDown(this.grid, newDOMNode, evt));
+                newNode.DOMNode = newDOMNode;
+                newDOMNode.id = `${row}_${col}`;
+                newDOMNode.setAttribute('size', nodeSize);
+                newDOMRow.appendChild(newDOMNode); // DOM node
+                this.DOMNodes.push(newDOMNode);
+                nodeRow.push(newNode); // node
+            }
+            this.grid.append(newDOMRow); // DOM grid
+            this.nodes.push(nodeRow); //grid
+        }
+    }
+
+    clearGrid() {
+        // clear grid
+        this.DOMNodes.forEach(node => Node.clearAttributes(node));
+        // reset state
+        this.startNode = null;
+        this.endNode = null;
+        this.prevNode = null;
     }
 }
 
-// DOM grid
-const grid = document.getElementById("grid");
-const gridDimensions = grid.getBoundingClientRect();
-const gridWidth = gridDimensions.width;
-const gridHeight = gridDimensions.height;
+
+
+// global state
+const APPSTATE = Object.freeze({DRAW_WALL: "DRAW_WALL", IDLE: "IDLE", SELECT_START: "SELECT_START", SELECT_END: "SELECT_END"})
+const mouseState = {mouseDown: false}
+const appState = {state: APPSTATE.IDLE}
+
+// main
 window.onload = () => {
-    generateGrid(24);
+    const grid = new Grid();
+    grid.generateGrid(24);
+
+    // user actions
+    document.onmousedown = handleMouseState;
+    document.onmouseup = handleMouseState;
+    const wallButton = document.getElementById("wall-button");
+    wallButton.onclick = (evt) => handleAppState(evt, APPSTATE.DRAW_WALL);
+    const gridSize = document.getElementById("grid-size");
+    gridSize.onchange = (evt) => handleGridSize(grid, evt.target.value);
+    const clearButton = document.getElementById("clear-button");
+    clearButton.onclick = (evt) => grid.clearGrid();
+    const selectStartButton = document.getElementById("select-start-button");
+    selectStartButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_START);
+    const selectEndButton = document.getElementById("select-end-button");
+    selectEndButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_END);
 };
 
-function generateGrid(nodeSize) {
-    // clear children
-    while (grid.firstChild) {
-        grid.removeChild(grid.firstChild);
-    }
-    
-    // generate nodes and DOM for nodes
-    for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
-        const newDOMRow = new DOMRow(); // DOM grid
-        const nodeRow = [];
-        for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
-            const newNode = new Node(row, col)
-            const newDOMNode = new DOMNode(newNode, mouseState, appState, nodeEventHandlers);
-            newNode.DOMNode = newDOMNode;
-            newDOMNode.id = `${row}_${col}`;
-            newDOMNode.setAttribute('size', nodeSize);
-            newDOMRow.appendChild(newDOMNode); // DOM node
-            DOMNodes.push(newDOMNode);
-            nodeRow.push(newNode); // node
-        }
-        grid.append(newDOMRow); // DOM grid
-        nodes.push(nodeRow); //grid
-    }
-}
-
-// setup mouse handlers 
-document.onmousedown = handleMouseState;
-document.onmouseup = handleMouseState;
-
-// user actions
-const wallButton = document.getElementById("wall-button");
-wallButton.onclick = (evt) => handleAppState(evt, APPSTATE.DRAW_WALL);
-const gridSize = document.getElementById("grid-size");
-gridSize.onchange = (evt) => handleGridSize(evt.target.value);
-const clearButton = document.getElementById("clear-button");
-clearButton.onclick = (evt) => clearGrid();
-const selectStartButton = document.getElementById("select-start-button");
-selectStartButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_START);
-const selectEndButton = document.getElementById("select-end-button");
-selectEndButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_END);
-
-function handleGridSize(nodeSize) {
-    const nodeSizes = [40,24,12];
-    generateGrid(nodeSizes[nodeSize]);
-}
-
-function clearGrid() {
-    // clear grid
-    DOMNodes.forEach(node => Node.clearAttributes(node));
-    // reset state
-    startNode = null;
-    endNode = null;
-    prevNode = null;
-}
-
+// Mouse Handlers
 function handleMouseState(evt) {
     switch (evt.type) {
         case "mousedown":
@@ -210,6 +154,59 @@ function handleMouseState(evt) {
         default:
             console.log(evt.type)
     }
+}
+
+function MouseEnter(grid, DOMNode, evt) {
+    handleMouseState(evt);
+    // wall drawing
+    if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
+        Node.setWall(DOMNode)
+    }
+}
+
+function MouseDown(grid, DOMNode, evt) {
+    handleMouseState(evt);
+    // wall drawing
+    if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
+        Node.setWall(DOMNode);
+    }
+
+    // select start
+    if (appState.state === APPSTATE.SELECT_START && mouseState.mouseDown) {
+        const isStart = DOMNode.isStart;
+        if (isStart) {
+            DOMNode.removeAttribute('isStart');
+            grid.startNode = null;
+        } else {
+            DOMNode.setAttribute('isStart', true);
+            grid.startNode = DOMNode.node;
+            if (grid.prevNode) grid.prevNode.removeAttribute('isStart');
+            grid.prevNode = Node.getDOMNode(grid.startNode);
+        }
+        console.log("MOUSEDOWN: ", evt);
+    }
+
+        // select end
+    if (appState.state === APPSTATE.SELECT_END && mouseState.mouseDown) {
+        const isEnd = DOMNode.isEnd;
+        if (isEnd) {
+            DOMNode.removeAttribute('isEnd');
+            grid.endNode = null;
+        } else {
+            DOMNode.setAttribute('isEnd', true);
+            grid.endNode = DOMNode.node;
+            if (grid.prevNode) grid.prevNode.removeAttribute('isEnd');
+            grid.prevNode = Node.getDOMNode(grid.endNode);
+        }
+        console.log("MOUSEDOWN: ", evt);
+    }
+}
+
+
+// event handlers
+function handleGridSize(grid, nodeSize) {
+    const nodeSizes = [40,24,12];
+    grid.generateGrid(nodeSizes[nodeSize]);
 }
 
 function handleAppState(evt, state) {

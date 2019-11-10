@@ -1,15 +1,12 @@
 let nodeTemplate = document.createElement('template');
 
 class DOMNode extends HTMLDivElement {
-    constructor(node, mouseState, appState, nodeEventHandlers) {
+    constructor(node, nodeEventHandlers) {
         super();
-        this.mouseState = mouseState;
         this.className = "node noDrag";
         this.row = node.row;
         this.col = node.col;
         this.node = node;
-        this.addEventListener("mouseenter", (evt) => nodeEventHandlers.MouseEnter(this, evt));
-        this.addEventListener("mousedown",  (evt) => nodeEventHandlers.MouseDown(this, evt));
     }
 
     static get observedAttributes() {
