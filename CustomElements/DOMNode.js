@@ -1,6 +1,6 @@
 let nodeTemplate = document.createElement('template');
 
-class DOMNode extends HTMLDivElement {
+class DOMNode extends HTMLTableCellElement {
     constructor(node, nodeEventHandlers) {
         super();
         this.className = "node noDrag";
@@ -80,6 +80,6 @@ class DOMNode extends HTMLDivElement {
     }
 }
 
-customElements.define('dom-node', DOMNode, { extends: "div" });
+customElements.define('dom-node', DOMNode, { extends: "td" });
 
 export default DOMNode;

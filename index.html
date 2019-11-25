@@ -7,6 +7,11 @@
     <meta name="description" content="Frontend Practice Through Pathfinding Visualization">
     <meta name="author" content="Alex Monji">
     <style>
+
+      * {
+        box-sizing: border-box;
+      }
+
       body {
         margin: 0;
         width: 100vw;
@@ -20,132 +25,137 @@
         flex-wrap: wrap;
         width: 100%;
         min-height: 80px;
-        background-color: #4184ff;
+        background-color: #2b4b86;
         padding: 5px;
       }
 
+      main {
+        height: calc(100% - 80px);
+        display: flex;
+      }
+
+      #sidebar {
+        height: 100%;
+        width: 300px;
+        background-color: grey;
+      }
+
+      /* =================== GRID =================== */
       #gridContainer {
         display: flex;
         justify-content: center;
         align-items: center;
         width: 100%;
+        height: 100%;
         box-sizing: border-box;
-        height: calc(100% - 80px);
-        padding: 20px;
+        padding: 10px;
       }
 
       #grid {
         width: 100%;
         height: 100%;
-        box-sizing: border-box;
-        justify-content: center;
-        align-items: center;
+        border-collapse: collapse;
+        table-layout: fixed;
       }
 
+      /* =================== CONTROLS =================== */
+      .tooltiptext {
+        font-family: sans-serif;
+        margin-top: 5px;
+        display: block;
+        visibility: hidden;
+        width: 160px;
+        background-color: rgba(0, 0, 0, 0.750);
+        color: #fff;
+        text-align: center;
+        padding: 5px 0;
+        border-radius: 6px;
+        position: absolute;
+        z-index: 1;
+      }
+
+      .tooltip:hover .tooltiptext {
+        visibility: visible;
+      }
+
+      .tooltiptext:before {
+        content:'';
+        display:block;
+        width:0;
+        height:0;
+        position:absolute;
+        border-top: 8px solid transparent;
+        border-bottom: 8px solid rgba(0, 0, 0, 0.750);
+        border-right:8px solid transparent;
+        border-left: 8px solid transparent;
+        left: 10px;
+        top: -8px;
+        margin-top: -8px;
+      }
+      
+      
       button {
+        justify-content: space-around;
+        padding-left: 10px;
+        padding-right: 10px;
         margin: 5px;
         min-width: 80px;
         height: 40px;
         border-radius: 3px;
-        border: 1px solid white;
+        border: 0px solid white;
         font-size: 20px;
         color: white;
-        background-color:rgba(0, 0, 0, 0);
+        background-color:#4184ff;
         box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+        display: flex;
+        cursor: pointer;
       }
 
       button:active {
         box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.2);
       }
 
-
-      .noDrag {
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -o-user-select: none;
-        user-select: none;
-      }
-
-      .row{
-        width: 100%;
-        display: flex;
-        justify-content: center;
-        align-items: center;
-      }
-
-      .node {
-        width: 24px;
-        height: 24px;
-        box-sizing: border-box;
-        border: 1px solid rgb(26, 90, 163);
-      }
-
-      .node[size="12"] {
-        width: 12px;
-        height: 12px;
-      }
-      
-      .node[size="40"] {
-        width: 40px;
-        height: 40px;
-      }
-
-      .node[isWall] {
-        background-color: grey;
-      }
-
-      .node[isStart] {
-        background-color: rgb(233, 198, 0);
-      }
-
-      .node[isEnd] {
-        background-color: rgb(255, 51, 0);
-      }
-
       .slider {
         display: block;
-        -webkit-appearance: none;  /* Override default CSS styles */
+        -webkit-appearance: none;  
         appearance: none;
-        width: 140px; /* Full-width */
-        height: 25px; /* Specified height */
-        background: #ffffff; /* Grey background */
+        width: 140px; 
+        height: 25px;
+        background: #ffffff; 
         margin: 4px 20px;
-        outline: none; /* Remove outline */
-        opacity: 0.9; /* Set transparency (for mouse-over effects on hover) */
-        -webkit-transition: .2s; /* 0.2 seconds transition on hover */
+        outline: none; 
+        opacity: 0.9;
+        -webkit-transition: .2s; 
         transition: opacity .2s;
         border-radius: 90px;
         box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
       }
 
-      /* Mouse-over effects */
       .slider:hover {
-        opacity: 1; /* Fully shown on mouse-over */
+        opacity: 1; 
       }
 
-      /* The slider handle (use -webkit- (Chrome, Opera, Safari, Edge) and -moz- (Firefox) to override default look) */
       .slider::-webkit-slider-thumb {
-        -webkit-appearance: none; /* Override default look */
+        -webkit-appearance: none; 
         appearance: none;
-        width: 25px; /* Set a specific slider handle width */
-        height: 25px; /* Slider handle height */
+        width: 25px; 
+        height: 25px;
         border-radius: 90%;
         border: 3px solid rgb(78, 134, 255);
         box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
-        background: white; /* Green background */
-        cursor: pointer; /* Cursor on hover */
+        background: white;
+        cursor: pointer;
       }
 
       .slider::-moz-range-thumb {
         appearance: none;
-        width: 25px; /* Set a specific slider handle width */
-        height: 25px; /* Slider handle height */
+        width: 25px; 
+        height: 25px;
         border-radius: 90%;
         border: 3px solid rgb(78, 134, 255);
         box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
-        background: white; /* Green background */
-        cursor: pointer; /* Cursor on hover */
+        background: white;
+        cursor: pointer;
       }
 
       .slider-container {
@@ -164,14 +174,150 @@
         font-family: sans-serif;
         font-size: 16px;
       }
+
+      .toggled {
+        background-color:rgb(7, 196, 209);
+      }
+
+      /* =================== NODE =================== */
+      .noDrag {
+        -webkit-user-select: none;
+        -khtml-user-select: none;
+        -moz-user-select: none;
+        -o-user-select: none;
+        user-select: none;
+      }
+
+      tr {
+        width: 100%;
+      }
+
+      .node {
+        width: 24px;
+        height: 24px;
+        box-sizing: border-box;
+        border: 1px solid rgb(26, 90, 163);
+        overflow: hidden;
+        transition: .2s;
+      }
+
+      .node[size="12"] {
+        width: 12px;
+        height: 12px;
+      }
+      
+      .node[size="40"] {
+        width: 40px;
+        height: 40px;
+      }
+
+      .node[isWall] {
+        border-color:rgb(95, 152, 218);
+        background-color: rgb(50, 79, 143);
+        animation-duration: .5s; 
+        animation-timing-function: ease-out; 
+        animation-delay: 0s;
+        animation-iteration-count: 1;
+        animation-direction: forwards;
+        animation-fill-mode: forwards;
+        animation-play-state: running;
+        animation-name: bounce;
+      }
+
+      .node[isStart] {
+        background-color:rgb(95, 255, 130);
+      }
+
+      .node[isStart][size="12"]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/home-24px.svg');
+        background-size: 9px 9px;
+        height: 9px;
+        width: 9px;
+      }
+
+      .node[isStart]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/home-24px.svg');
+        background-size: 21px 21px;
+        height: 21px;
+        width: 21px;
+      }
+
+      .node[isStart][size="40"]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/home-24px.svg');
+        background-size: 36px 36px;
+        height: 36px;
+        width: 36px;
+      }
+
+      .node[isEnd] {
+        background-color:rgb(255, 100, 95);
+      }
+
+      .node[isEnd][size="12"]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/flag-24px.svg');
+        background-size: 9px 9px;
+        height: 9px;
+        width: 9px;
+      }
+
+      .node[isEnd]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/flag-24px.svg');
+        background-size: 21px 21px;
+        height: 21px;
+        width: 21px;
+      }
+
+      .node[isEnd][size="40"]:before {
+        display: block;
+        content: '';
+        background-image: url('/svg/flag-24px.svg');
+        background-size: 36px 36px;
+        height: 36px;
+        width: 36px;
+      }
+
+      /* =========== ANIMATIONS ============ */
+      @keyframes bounce {
+        0% {
+          transform: scale(0);
+          border-radius: 10px;
+        }
+        50% {
+          transform: scale(1.2);
+        }
+        100% {
+          transform: scale(1);
+        }
+      }
+
     </style>
     <script type="module" src="app.js"></script>
   </head>
   <body>
     <nav>
-      <button id="select-start-button">Place Start</button>
-      <button id="select-end-button">Place End</button>
-      <button  id="wall-button" type="checkbox">Place Wall</button>
+      <div class="tooltip">
+        <button id="select-start-button">Place Start
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="margin-left: 5px;"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
+        </button>
+        <label for="select-start-button" class="tooltiptext">Left click to place. <br/> Drag to move.</label>
+      </div>
+      <button id="select-end-button">Place End
+          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="margin-left: 5px;"><path d="M0 0h24v24H0z" fill="none"/><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
+      </button>
+      <div class="tooltip">
+        <button id="wall-button">Place Wall</button>
+        <label for="wall-button" class="tooltiptext">Left click to place. <br/> Right click to delete.</label>
+      </div>
       <button id="clear-button">Clear All</button>
       <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
@@ -179,10 +325,13 @@
         <div class="slider-labels">Grid Size</div>
       </div>
     </nav>
-    <div id="gridContainer" class="noDrag">
-      <div id="grid" class="noDrag">
-      </div>
-    </div>
+    <main>
+      <section id="sidebar"></section>
+      <section id="gridContainer" class="noDrag">
+        <table id="grid" class="noDrag">
+        </table>
+      </section>
+    </main>
     <script>
       
     </script>

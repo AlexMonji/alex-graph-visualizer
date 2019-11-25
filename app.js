@@ -1,6 +1,68 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
 
+//Grid
+//  generateGrid(nodeSize)
+//  handleGridSize(nodeSize)
+//  clearGrid()
+//  handleGridSize(nodeSize)
+class Grid {
+    constructor(){
+        this.grid = document.getElementById("grid");
+        this.nodes = [];
+        this.DOMNodes = [];
+        this.startNode = null;
+        this.endNode = null;
+        this.prevNode = null;
+        this.nodeSizes = [40,24,12];
+    }
+
+    generateGrid(nodeSize) {
+        // get grid dimensions
+        const gridDimensions = this.grid.getBoundingClientRect();
+        const gridWidth = gridDimensions.width;
+        const gridHeight = gridDimensions.height;
+
+        // clear children
+        while (this.grid.firstChild) {
+            this.grid.removeChild(grid.firstChild);
+        }
+        
+        // generate nodes and DOM for nodes
+        for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
+            const newDOMRow = document.createElement("tr"); // DOM grid
+            const nodeRow = [];
+            for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
+                const newNode = new Node(row, col)
+                const newDOMNode = new DOMNode(newNode);
+                newDOMNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(this.grid, newDOMNode, evt));
+                newDOMNode.addEventListener("mousedown",  (evt) => NodeMouseDown(this.grid, newDOMNode, evt));
+                newNode.DOMNode = newDOMNode;
+                newDOMNode.id = `${row}_${col}`;
+                newDOMNode.setAttribute('size', nodeSize);
+                newDOMRow.appendChild(newDOMNode); // DOM node
+                this.DOMNodes.push(newDOMNode);
+                nodeRow.push(newNode); // node
+            }
+            this.grid.append(newDOMRow); // DOM grid
+            this.nodes.push(nodeRow); //grid
+        }
+    }
+
+    // remove DOMNodes and clear state
+    clearGrid() {
+        this.DOMNodes.forEach(node => Node.clearAttributes(node));
+        this.startNode = null;
+        this.endNode = null;
+        this.prevNode = null;
+    }
+
+    // generate new grid if grid size changes
+    handleGridSize(nodeSize) { 
+        this.generateGrid(this.nodeSizes[nodeSize]);
+    }
+}
+
 //Node(row, col)
 //  clearAttributes(node)
 //  getNeighbors(node)
@@ -47,199 +109,218 @@ class Node {
         return document.getElementById(`${row}_${col}`)
     }
 
-    static setWall(DOMNode) {
-        const node = DOMNode.node;
-        const isWall = node.isWall;
-        if (isWall) {
-            DOMNode.removeAttribute('isWall');
-            node.isWall = false;
-        } else { 
-            DOMNode.setAttribute('isWall', true);
-            node.isWall = true;
-        }
+    setWall() {
+        this.DOMNode.setAttribute('isWall', true);
+        this.isWall = true;
+    }
+
+    removeWall() {
+        this.DOMNode.removeAttribute('isWall');
+        this.isWall = false;
     }
 }
 
-//Grid
-//  generateGrid(nodeSize)
-//  handleGridSize(nodeSize)
-//  clearGrid
-class Grid {
-    constructor(){
-        this.grid = document.getElementById("grid");
-        this.nodes = [];
-        this.DOMNodes = [];
-        this.startNode = null;
-        this.endNode = null;
-        this.prevNode = null;
+class StateMachine {
+    constructor (initialState) {
+        this.state = initialState;
+        this.mouseState = {leftMouseDown: false, rightMouseDown: false};
+        this.handleMouseState = this.handleMouseState.bind(this);
     }
 
-    generateGrid(nodeSize) {
-        // get grid dimensions
-        const gridDimensions = this.grid.getBoundingClientRect();
-        const gridWidth = gridDimensions.width;
-        const gridHeight = gridDimensions.height;
-
-        // clear children
-        while (this.grid.firstChild) {
-            this.grid.removeChild(grid.firstChild);
+    transition(state) {
+        // attempt to transition to next state
+        let nextState = this.state.transitions[state.name]
+        
+        // if next state doesn't exist, show default error and don't transition
+        if (!nextState) {
+            alert(`No transition ${this.state.name} => ${state.name}`);
+            return;
+        }
+        // if next state has an error, call its error function and don't transition
+        if (nextState.error) { 
+            nextState.error();
+            return
         }
         
-        // generate nodes and DOM for nodes
-        for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
-            const newDOMRow = new DOMRow(); // DOM grid
-            const nodeRow = [];
-            for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
-                const newNode = new Node(row, col)
-                const newDOMNode = new DOMNode(newNode);
-                newDOMNode.addEventListener("mouseenter", (evt) => MouseEnter(this.grid, newDOMNode, evt));
-                newDOMNode.addEventListener("mousedown",  (evt) => MouseDown(this.grid, newDOMNode, evt));
-                newNode.DOMNode = newDOMNode;
-                newDOMNode.id = `${row}_${col}`;
-                newDOMNode.setAttribute('size', nodeSize);
-                newDOMRow.appendChild(newDOMNode); // DOM node
-                this.DOMNodes.push(newDOMNode);
-                nodeRow.push(newNode); // node
-            }
-            this.grid.append(newDOMRow); // DOM grid
-            this.nodes.push(nodeRow); //grid
+        if (nextState.animation) {
+            nextState.animation();
         }
+
+        this.state = APPSTATE[state.name];
+        console.log(this.state);
     }
 
-    clearGrid() {
-        // clear grid
-        this.DOMNodes.forEach(node => Node.clearAttributes(node));
-        // reset state
-        this.startNode = null;
-        this.endNode = null;
-        this.prevNode = null;
+    handleMouseState(evt) {
+        this.mouseState.leftMouseDown = false;
+        this.mouseState.rightMouseDown = false;
+        switch(evt.which) {
+            case 1: 
+                this.mouseState.leftMouseDown = true;
+                break;
+            case 3: 
+                this.mouseState.rightMouseDown = true;
+                break;
+        }
     }
 }
 
-
-
-// global state
-const APPSTATE = Object.freeze({DRAW_WALL: "DRAW_WALL", IDLE: "IDLE", SELECT_START: "SELECT_START", SELECT_END: "SELECT_END"})
-const mouseState = {mouseDown: false}
-const appState = {state: APPSTATE.IDLE}
-
 // main
-window.onload = () => {
+window.addEventListener("DOMContentLoaded", function() {
+
     const grid = new Grid();
     grid.generateGrid(24);
 
+    // prevent contentmenu on node right click
+    document.oncontextmenu = function(evt){
+        if (evt.target instanceof DOMNode) {
+            evt.preventDefault();
+        }
+    }
+
     // user actions
-    document.onmousedown = handleMouseState;
-    document.onmouseup = handleMouseState;
-    const wallButton = document.getElementById("wall-button");
-    wallButton.onclick = (evt) => handleAppState(evt, APPSTATE.DRAW_WALL);
     const gridSize = document.getElementById("grid-size");
-    gridSize.onchange = (evt) => handleGridSize(grid, evt.target.value);
+    gridSize.onchange = (evt) => grid.handleGridSize(evt.target.value);
     const clearButton = document.getElementById("clear-button");
     clearButton.onclick = (evt) => grid.clearGrid();
-    const selectStartButton = document.getElementById("select-start-button");
-    selectStartButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_START);
-    const selectEndButton = document.getElementById("select-end-button");
-    selectEndButton.onclick = (evt) => handleAppState(evt, APPSTATE.SELECT_END);
-};
 
-// Mouse Handlers
-function handleMouseState(evt) {
-    switch (evt.type) {
-        case "mousedown":
-        case "mouseenter":
-        case "mouseup":
-            mouseState.mouseDown = evt.buttons === undefined ? evt.which === 1 : evt.buttons === 1; // true if left mouse down, false otherwise
+    const wallButton = document.getElementById("wall-button");
+    wallButton.onclick = (evt) => handleAppState(APPSTATE.DRAW_WALL);
+    const selectStartButton = document.getElementById("select-start-button");
+    selectStartButton.onclick = (evt) => handleAppState(APPSTATE.SELECT_START);
+    const selectEndButton = document.getElementById("select-end-button");
+    selectEndButton.onclick = (evt) => handleAppState(APPSTATE.SELECT_END);
+});
+
+// Node Logic Handlers
+function NodeMouseEnter(grid, DOMNode, evt) {
+    stateMachine.handleMouseState(evt); // update mouse state before doing anything
+    const leftMouseDown = stateMachine.mouseState.leftMouseDown;
+    const rightMouseDown = stateMachine.mouseState.rightMouseDown;
+    
+    // wall drawing
+    if (stateMachine.state === APPSTATE.DRAW_WALL ) {
+        if (leftMouseDown) DOMNode.node.setWall(DOMNode);
+        if (rightMouseDown) DOMNode.node.removeWall(DOMNode);
+    }
+}
+
+function NodeMouseDown(grid, DOMNode, evt) {
+    stateMachine.handleMouseState(evt);
+
+    const leftMouseDown = stateMachine.mouseState.leftMouseDown;
+    const rightMouseDown = stateMachine.mouseState.rightMouseDown;
+    
+    // wall drawing
+    switch(stateMachine.state) {
+        case APPSTATE.DRAW_WALL:
+            if (leftMouseDown) DOMNode.node.setWall(DOMNode);
+            if (rightMouseDown) DOMNode.node.removeWall(DOMNode);
+            break;
+        case APPSTATE.SELECT_START:
+            const isStart = DOMNode.isStart;
+            if (isStart) {
+                DOMNode.removeAttribute('isStart');
+                grid.startNode = null;
+            } else {
+                if (grid.startNode) grid.startNode.DOMNode.removeAttribute('isStart');
+                DOMNode.setAttribute('isStart', true);
+                grid.startNode = DOMNode.node;
+            }
+            break;
+        case APPSTATE.SELECT_END:
+            const isEnd = DOMNode.isEnd;
+            if (isEnd) {
+                DOMNode.removeAttribute('isEnd');
+                grid.endNode = null;
+            } else {
+                if (grid.endNode) grid.endNode.DOMNode.removeAttribute('isEnd');
+                DOMNode.setAttribute('isEnd', true);
+                grid.endNode = DOMNode.node;
+            }
             break;
         default:
-            console.log(evt.type)
+            break;
     }
 }
 
-function MouseEnter(grid, DOMNode, evt) {
-    handleMouseState(evt);
-    // wall drawing
-    if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-        Node.setWall(DOMNode)
-    }
-}
-
-function MouseDown(grid, DOMNode, evt) {
-    handleMouseState(evt);
-    // wall drawing
-    if (appState.state === APPSTATE.DRAW_WALL && mouseState.mouseDown) {
-        Node.setWall(DOMNode);
-    }
-
-    // select start
-    if (appState.state === APPSTATE.SELECT_START && mouseState.mouseDown) {
-        const isStart = DOMNode.isStart;
-        if (isStart) {
-            DOMNode.removeAttribute('isStart');
-            grid.startNode = null;
-        } else {
-            DOMNode.setAttribute('isStart', true);
-            grid.startNode = DOMNode.node;
-            if (grid.prevNode) grid.prevNode.removeAttribute('isStart');
-            grid.prevNode = Node.getDOMNode(grid.startNode);
+// global state
+const APPSTATE = Object.freeze({
+    IDLE: {
+        name: "IDLE", 
+        transitions: {
+            DRAW_WALL: {name: "DRAW_WALL"},
+            SELECT_START: {name: "SELECT_START"},
+            SELECT_END: {name: "SELECT_END"},
         }
-        console.log("MOUSEDOWN: ", evt);
-    }
-
-        // select end
-    if (appState.state === APPSTATE.SELECT_END && mouseState.mouseDown) {
-        const isEnd = DOMNode.isEnd;
-        if (isEnd) {
-            DOMNode.removeAttribute('isEnd');
-            grid.endNode = null;
-        } else {
-            DOMNode.setAttribute('isEnd', true);
-            grid.endNode = DOMNode.node;
-            if (grid.prevNode) grid.prevNode.removeAttribute('isEnd');
-            grid.prevNode = Node.getDOMNode(grid.endNode);
+    },
+    DRAW_WALL: {
+        name: "DRAW_WALL",
+        transitions: {
+            IDLE: {name: "IDLE"},
+            SELECT_START: {name: "SELECT_START"},
+            SELECT_END: {name: "SELECT_END"},
         }
-        console.log("MOUSEDOWN: ", evt);
-    }
-}
+    },   
+    SELECT_START: {
+        name: "SELECT_START", 
+        transitions: {
+            IDLE: {name: "IDLE"},
+            DRAW_WALL: {name: "DRAW_WALL"},
+            SELECT_END: {name: "SELECT_END"},
+        }
+    }, 
+    SELECT_END: {
+        name: "SELECT_END", 
+        transitions: {
+            IDLE: {name: "IDLE"},
+            DRAW_WALL: {name: "DRAW_WALL"},
+            SELECT_START: {name: "SELECT_START"},
+        }
+    }, 
+});
 
+const stateMachine = new StateMachine(APPSTATE.IDLE);
 
-// event handlers
-function handleGridSize(grid, nodeSize) {
-    const nodeSizes = [40,24,12];
-    grid.generateGrid(nodeSizes[nodeSize]);
-}
-
-function handleAppState(evt, state) {
+// handle transitioning state machine based on user button press
+function handleAppState(state) {
     switch(state) {
         // is user pressed wall button, set to draw wall mode
         case APPSTATE.DRAW_WALL:
-            if (appState.state !== APPSTATE.DRAW_WALL) {
-                console.log("DRAWING WALLS")
-                appState.state = APPSTATE.DRAW_WALL;
-            } else {
-                appState.state = APPSTATE.IDLE;
-            }
+            stateMachine.state !== APPSTATE.DRAW_WALL ? stateMachine.transition(APPSTATE.DRAW_WALL) : stateMachine.transition(APPSTATE.IDLE)
             break;
         // Place START
         case APPSTATE.SELECT_START:
-            if (appState.state !== APPSTATE.SELECT_START) {
-                console.log("SELECTING START")
-                appState.state = APPSTATE.SELECT_START;
-            } else {
-                appState.state = APPSTATE.IDLE;
-            }
+            stateMachine.state !== APPSTATE.SELECT_START ? stateMachine.transition(APPSTATE.SELECT_START) : stateMachine.transition(APPSTATE.IDLE)
             break;
-        // Place EMD
+        // Place END
         case APPSTATE.SELECT_END:
-            if (appState.state !== APPSTATE.SELECT_END) {
-                console.log("SELECTING END")
-                appState.state = APPSTATE.SELECT_END;
-            } else {
-                appState.state = APPSTATE.IDLE;
-            }
+            stateMachine.state !== APPSTATE.SELECT_END ? stateMachine.transition(APPSTATE.SELECT_END) : stateMachine.transition(APPSTATE.IDLE)
             break;
         default: 
-            appState.state = APPSTATE.IDLE;
+            stateMachine.transition(APPSTATE.IDLE);
+    }
+    toggleButtons();
+}
+
+// toggle button appearance
+function toggleButtons() {
+    document.getElementById("wall-button").classList.remove("toggled");
+    document.getElementById("select-start-button").classList.remove("toggled");
+    document.getElementById("select-end-button").classList.remove("toggled");
+    switch(stateMachine.state) {
+        // is user pressed wall button, set to draw wall mode
+        case APPSTATE.DRAW_WALL:
+            document.getElementById("wall-button").classList.add("toggled");
+            break;
+        // Place START
+        case APPSTATE.SELECT_START:
+            document.getElementById("select-start-button").classList.add("toggled");
+            break;
+        // Place END
+        case APPSTATE.SELECT_END:
+            document.getElementById("select-end-button").classList.add("toggled");
+            break;
+        default: 
     }
 }
 
