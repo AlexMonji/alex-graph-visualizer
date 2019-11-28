@@ -10,7 +10,6 @@ class Grid {
     constructor(){
         this.grid = document.getElementById("grid");
         this.nodes = [];
-        this.DOMNodes = [];
         this.startNode = null;
         this.endNode = null;
         this.prevNode = null;
@@ -31,27 +30,27 @@ class Grid {
         // generate nodes and DOM for nodes
         for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
             const newDOMRow = document.createElement("tr"); // DOM grid
-            const nodeRow = [];
             for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
                 const newNode = new Node(row, col)
+
+                // DOM Node setup
                 const newDOMNode = new DOMNode(newNode);
-                newDOMNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(this.grid, newDOMNode, evt));
-                newDOMNode.addEventListener("mousedown",  (evt) => NodeMouseDown(this.grid, newDOMNode, evt));
-                newNode.DOMNode = newDOMNode;
-                newDOMNode.id = `${row}_${col}`;
+                newDOMNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(this, newNode, evt));
+                newDOMNode.addEventListener("mousedown",  (evt) => NodeMouseDown(this, newNode, evt));
                 newDOMNode.setAttribute('size', nodeSize);
-                newDOMRow.appendChild(newDOMNode); // DOM node
-                this.DOMNodes.push(newDOMNode);
-                nodeRow.push(newNode); // node
+                newDOMRow.appendChild(newDOMNode);
+
+                // Internal Node
+                newNode.DOMNode = newDOMNode;
+                this.nodes.push(newNode);
             }
-            this.grid.append(newDOMRow); // DOM grid
-            this.nodes.push(nodeRow); //grid
+            this.grid.append(newDOMRow);
         }
     }
 
     // remove DOMNodes and clear state
     clearGrid() {
-        this.DOMNodes.forEach(node => Node.clearAttributes(node));
+        this.nodes.forEach(node => node.clearAttributes());
         this.startNode = null;
         this.endNode = null;
         this.prevNode = null;
@@ -60,6 +59,28 @@ class Grid {
     // generate new grid if grid size changes
     handleGridSize(nodeSize) { 
         this.generateGrid(this.nodeSizes[nodeSize]);
+    }
+
+    setStart(node) {
+        if (this.startNode == node) {
+            node.setIsStart(false);
+            this.startNode = null;
+        } else {
+            if (this.startNode) this.startNode.setIsStart(false);
+            node.setIsStart(true);
+            this.startNode = node;
+        }
+    }
+
+    setEnd(node) {
+        if (this.endNode == node) {
+            node.setIsEnd(false);
+            this.endNode = null;
+        } else {
+            if (this.endNode) this.endNode.setIsEnd(false);
+            node.setIsEnd(true);
+            this.endNode = node;
+        }
     }
 }
 
@@ -77,7 +98,7 @@ class Node {
         this.isVisited = false;
     }
 
-    static getNeighbors(node) {
+    getNeighbors(node) {
         const {row, col} = node;
         const neighbors = [];
         const colLength = nodes[0].length;
@@ -97,26 +118,28 @@ class Node {
         return neighbors;
     }
     
-    static clearAttributes(node) {
-        const DOMNode = Node.getDOMNode(node);
-        DOMNode.removeAttribute('isStart');
-        DOMNode.removeAttribute('isEnd');
-        DOMNode.removeAttribute('isWall');
-    }
-    
-    static getDOMNode(node) {
-        const {row, col} = node;
-        return document.getElementById(`${row}_${col}`)
+    clearAttributes() {
+        this.DOMNode.isStart = false;
+        this.DOMNode.isEnd = false;
+        this.DOMNode.isWall = false;
     }
 
-    setWall() {
-        this.DOMNode.setAttribute('isWall', true);
-        this.isWall = true;
+    setIsVisited(value) {
+        this.DOMNode.isVisited = value;
+        this.isVisited = value;
     }
 
-    removeWall() {
-        this.DOMNode.removeAttribute('isWall');
-        this.isWall = false;
+    setIsWall(value) {
+        this.DOMNode.isWall = value;
+        this.isWall = value;
+    }
+
+    setIsStart(value) {
+        this.DOMNode.isStart = value;
+    }
+
+    setIsEnd(value) {
+        this.DOMNode.isEnd = value;
     }
 }
 
@@ -153,11 +176,12 @@ class StateMachine {
     handleMouseState(evt) {
         this.mouseState.leftMouseDown = false;
         this.mouseState.rightMouseDown = false;
-        switch(evt.which) {
+
+        switch(evt.buttons) {
             case 1: 
                 this.mouseState.leftMouseDown = true;
                 break;
-            case 3: 
+            case 2: 
                 this.mouseState.rightMouseDown = true;
                 break;
         }
@@ -192,19 +216,19 @@ window.addEventListener("DOMContentLoaded", function() {
 });
 
 // Node Logic Handlers
-function NodeMouseEnter(grid, DOMNode, evt) {
+function NodeMouseEnter(grid, node, evt) {
     stateMachine.handleMouseState(evt); // update mouse state before doing anything
     const leftMouseDown = stateMachine.mouseState.leftMouseDown;
     const rightMouseDown = stateMachine.mouseState.rightMouseDown;
     
     // wall drawing
     if (stateMachine.state === APPSTATE.DRAW_WALL ) {
-        if (leftMouseDown) DOMNode.node.setWall(DOMNode);
-        if (rightMouseDown) DOMNode.node.removeWall(DOMNode);
+        if (leftMouseDown) node.setIsWall(true);
+        if (rightMouseDown) node.setIsWall(false);
     }
 }
 
-function NodeMouseDown(grid, DOMNode, evt) {
+function NodeMouseDown(grid, node, evt) {
     stateMachine.handleMouseState(evt);
 
     const leftMouseDown = stateMachine.mouseState.leftMouseDown;
@@ -213,30 +237,14 @@ function NodeMouseDown(grid, DOMNode, evt) {
     // wall drawing
     switch(stateMachine.state) {
         case APPSTATE.DRAW_WALL:
-            if (leftMouseDown) DOMNode.node.setWall(DOMNode);
-            if (rightMouseDown) DOMNode.node.removeWall(DOMNode);
+            if (leftMouseDown) node.setIsWall(true);
+            if (rightMouseDown) node.setIsWall(false);
             break;
         case APPSTATE.SELECT_START:
-            const isStart = DOMNode.isStart;
-            if (isStart) {
-                DOMNode.removeAttribute('isStart');
-                grid.startNode = null;
-            } else {
-                if (grid.startNode) grid.startNode.DOMNode.removeAttribute('isStart');
-                DOMNode.setAttribute('isStart', true);
-                grid.startNode = DOMNode.node;
-            }
+            grid.setStart(node);
             break;
         case APPSTATE.SELECT_END:
-            const isEnd = DOMNode.isEnd;
-            if (isEnd) {
-                DOMNode.removeAttribute('isEnd');
-                grid.endNode = null;
-            } else {
-                if (grid.endNode) grid.endNode.DOMNode.removeAttribute('isEnd');
-                DOMNode.setAttribute('isEnd', true);
-                grid.endNode = DOMNode.node;
-            }
+            grid.setEnd(node);
             break;
         default:
             break;

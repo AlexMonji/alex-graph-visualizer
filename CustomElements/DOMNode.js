@@ -21,22 +21,26 @@ class DOMNode extends HTMLTableCellElement {
 
     set isWall(value) {
         const isWall = Boolean(value);
-        if (isWall)
+        if (isWall) {
             this.setAttribute('isWall', '');
-        else
+            this.node.isWall = true;
+        } else {
             this.removeAttribute('isWall');
+            this.node.isWall = false;
+        }
     }
       
     get isWall() {
-        return this.hasAttribute('isWall');
+        return this.node.isWall;
     }
 
     set isVisited(value) {
         const isVisited = Boolean(value);
-        if (isVisited)
+        if (isVisited) {
             this.setAttribute('isVisited', '');
-        else
+        } else {
             this.removeAttribute('isVisited');
+        }
     }
       
     get isVisited() {
@@ -45,10 +49,11 @@ class DOMNode extends HTMLTableCellElement {
 
     set isStart(value) {
         const isStart = Boolean(value);
-        if (isStart)
+        if (isStart) {
             this.setAttribute('isStart', '');
-        else
+        } else {
             this.removeAttribute('isStart');
+        }
     }
       
     get isStart() {
@@ -57,10 +62,11 @@ class DOMNode extends HTMLTableCellElement {
 
     set isEnd(value) {
         const isEnd = Boolean(value);
-        if (isEnd)
+        if (isEnd) {
             this.setAttribute('isEnd', '');
-        else
+        } else {
             this.removeAttribute('isEnd');
+        }    
     }
       
     get isEnd() {
