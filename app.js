@@ -1,6 +1,9 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
 
+let animationQueue = [];
+let prevAnimationIndex = 0;
+
 //Grid
 //  generateGrid(nodeSize)
 //  handleGridSize(nodeSize)
@@ -26,11 +29,14 @@ class Grid {
         while (this.grid.firstChild) {
             this.grid.removeChild(grid.firstChild);
         }
-        
+
+        const rows = Math.floor(gridHeight/nodeSize) % 2 ? Math.floor(gridHeight/nodeSize) : Math.floor(gridHeight/nodeSize)+1;
+        const cols = Math.floor(gridWidth/nodeSize) % 2 ? Math.floor(gridWidth/nodeSize) : Math.floor(gridWidth/nodeSize)+1;
         // generate nodes and DOM for nodes
-        for (let row = 0; row < Math.floor(gridHeight/nodeSize); row++) {
+        for (let row = 0; row < rows; row++) {
+            const nodeRow = [];
             const newDOMRow = document.createElement("tr"); // DOM grid
-            for (let col = 0; col < Math.floor(gridWidth/nodeSize); col++) {
+            for (let col = 0; col < cols; col++) {
                 const newNode = new Node(row, col)
 
                 // DOM Node setup
@@ -42,18 +48,37 @@ class Grid {
 
                 // Internal Node
                 newNode.DOMNode = newDOMNode;
-                this.nodes.push(newNode);
+                nodeRow.push(newNode);
+                
+                // set start and end node
+                if (row == parseInt(rows/2) && col == parseInt(cols/4)) this.setStart(newNode);
+                if (row == parseInt(rows/2) && col == parseInt(3*cols/4)) this.setEnd(newNode);
             }
+            this.nodes.push(nodeRow);
             this.grid.append(newDOMRow);
         }
     }
 
-    // remove DOMNodes and clear state
+    // remove walls
     clearGrid() {
-        this.nodes.forEach(node => node.clearAttributes());
-        this.startNode = null;
-        this.endNode = null;
-        this.prevNode = null;
+        this.nodes.forEach(nodeRow => nodeRow.forEach(node => {
+            node.setIsWall(false);
+            node.visited = false;
+            node.DOMNode.setVisited(false);
+            node.DOMNode.setPath(false);
+        }));
+        animationQueue = [];
+        stateMachine.transition(APPSTATE.IDLE);
+    }
+
+    clearVisited() {
+        this.nodes.forEach(nodeRow => nodeRow.forEach(node => {
+            node.visited = false;
+            node.DOMNode.setVisited(false);
+            node.DOMNode.setPath(false);
+        }));
+        animationQueue = [];
+        stateMachine.transition(APPSTATE.IDLE);
     }
 
     // generate new grid if grid size changes
@@ -95,25 +120,49 @@ class Node {
         this.row = row;
         this.col = col;
         this.isWall = false;
-        this.isVisited = false;
+        this.direction = null;
+        this.visited = false;
+        this.from = null;
     }
 
-    getNeighbors(node) {
-        const {row, col} = node;
+    getNeighbors(grid) {
+        const {row, col} = this;
+        const nodes = grid.nodes;
         const neighbors = [];
         const colLength = nodes[0].length;
         const rowLength = nodes.length
+        let neighbor = null;
         if (col+1 < colLength) {
-            neighbors.push(nodes[row][col+1]);
+            neighbor = nodes[row][col+1];
+            if (!neighbor.visited) {
+                neighbor.from = this;
+                neighbor.direction = "left";
+                neighbors.push( neighbor );
+            }
         }
         if (row+1 < rowLength) {
-            neighbors.push(nodes[row+1][col]);
+            neighbor = nodes[row+1][col];
+            if (!neighbor.visited) {
+                neighbor.from = this;
+                neighbor.direction = "above";
+                neighbors.push( neighbor );
+            }
         }
-        if (col-1 > 0) {
-            neighbors.push(nodes[row][col-1]);
+        if (col-1 >= 0) {
+            neighbor = nodes[row][col-1];
+            if (!neighbor.visited) {
+                neighbor.from = this;
+                neighbor.direction = "right";
+                neighbors.push( neighbor );
+            }
         }
-        if (row-1 > 0) {
-            neighbors.push(nodes[row-1][col]);
+        if (row-1 >= 0) {
+            neighbor = nodes[row-1][col];
+            if (!neighbor.visited) {
+                neighbor.from = this;
+                neighbor.direction = "below";
+                neighbors.push( neighbor );
+            }
         }
         return neighbors;
     }
@@ -124,9 +173,14 @@ class Node {
         this.DOMNode.isWall = false;
     }
 
-    setIsVisited(value) {
-        this.DOMNode.isVisited = value;
-        this.isVisited = value;
+    setVisited(value, animate = true) {
+        if (animate) this.DOMNode.setVisited(value, this.direction);
+        else this.DOMNode.setVisited(value, "none");
+    }
+
+    setPath(value, animate = true) {
+        if (animate) this.DOMNode.setPath(value, this.direction);
+        else this.DOMNode.setPath(value, "none");     
     }
 
     setIsWall(value) {
@@ -146,6 +200,7 @@ class Node {
 class StateMachine {
     constructor (initialState) {
         this.state = initialState;
+        this.prevState = null;
         this.mouseState = {leftMouseDown: false, rightMouseDown: false};
         this.handleMouseState = this.handleMouseState.bind(this);
     }
@@ -169,6 +224,11 @@ class StateMachine {
             nextState.animation();
         }
 
+        if (nextState.prepareForTransition) {
+            nextState.prepareForTransition();
+        }
+        
+        if (this.state != APPSTATE[state.name]) this.prevState = this.state; // don't set prevState if next state is the same as current
         this.state = APPSTATE[state.name];
         console.log(this.state);
     }
@@ -200,19 +260,23 @@ window.addEventListener("DOMContentLoaded", function() {
             evt.preventDefault();
         }
     }
+    document.onmouseup = handleMouseUp;
 
     // user actions
-    const gridSize = document.getElementById("grid-size");
-    gridSize.onchange = (evt) => grid.handleGridSize(evt.target.value);
+    // const gridSize = document.getElementById("grid-size");
+    // gridSize.onchange = (evt) => grid.handleGridSize(evt.target.value);
+    const playButton = document.getElementById("play-button");
+    playButton.onclick = handlePlay;
+    const animationProgress = document.getElementById("animation-progress");
+    animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value);
+    const BFSButton = document.getElementById("algorithm-BFS");
+    BFSButton.onclick = () => runAlgorithm(grid, BFS, animationProgress, playButton);
+    const DFSButton = document.getElementById("algorithm-DFS");
+    DFSButton.onclick = () => runAlgorithm(grid, DFS, animationProgress, playButton);
     const clearButton = document.getElementById("clear-button");
-    clearButton.onclick = (evt) => grid.clearGrid();
-
-    const wallButton = document.getElementById("wall-button");
-    wallButton.onclick = (evt) => handleAppState(APPSTATE.DRAW_WALL);
-    const selectStartButton = document.getElementById("select-start-button");
-    selectStartButton.onclick = (evt) => handleAppState(APPSTATE.SELECT_START);
-    const selectEndButton = document.getElementById("select-end-button");
-    selectEndButton.onclick = (evt) => handleAppState(APPSTATE.SELECT_END);
+    clearButton.onclick = () => grid.clearGrid();
+    const resetButton = document.getElementById("reset-button");
+    resetButton.onclick = () => grid.clearVisited();
 });
 
 // Node Logic Handlers
@@ -222,29 +286,44 @@ function NodeMouseEnter(grid, node, evt) {
     const rightMouseDown = stateMachine.mouseState.rightMouseDown;
     
     // wall drawing
-    if (stateMachine.state === APPSTATE.DRAW_WALL ) {
-        if (leftMouseDown) node.setIsWall(true);
-        if (rightMouseDown) node.setIsWall(false);
+    switch(stateMachine.state) {
+        case APPSTATE.IDLE:
+            if (leftMouseDown) node.setIsWall(true);
+            if (rightMouseDown) node.setIsWall(false);
+            break;
+        case APPSTATE.MOVE_START:
+            if (node != grid.endNode) grid.setStart(node);
+            break;
+        case APPSTATE.MOVE_END:
+            if (node != grid.startNode) grid.setEnd(node);
+            break;
     }
 }
 
 function NodeMouseDown(grid, node, evt) {
     stateMachine.handleMouseState(evt);
-
     const leftMouseDown = stateMachine.mouseState.leftMouseDown;
     const rightMouseDown = stateMachine.mouseState.rightMouseDown;
-    
-    // wall drawing
+
+    if (node == grid.startNode) { stateMachine.transition(APPSTATE.MOVE_START); } 
+    if (node == grid.endNode) { stateMachine.transition(APPSTATE.MOVE_END); }
+
     switch(stateMachine.state) {
-        case APPSTATE.DRAW_WALL:
+        // wall drawing
+        case APPSTATE.IDLE:
             if (leftMouseDown) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             break;
-        case APPSTATE.SELECT_START:
-            grid.setStart(node);
+        default:
             break;
-        case APPSTATE.SELECT_END:
-            grid.setEnd(node);
+    }
+}
+
+function handleMouseUp(evt){
+    switch(stateMachine.state) {
+        case APPSTATE.MOVE_END:
+        case APPSTATE.MOVE_START:
+            stateMachine.transition(stateMachine.prevState);
             break;
         default:
             break;
@@ -256,33 +335,45 @@ const APPSTATE = Object.freeze({
     IDLE: {
         name: "IDLE", 
         transitions: {
-            DRAW_WALL: {name: "DRAW_WALL"},
-            SELECT_START: {name: "SELECT_START"},
-            SELECT_END: {name: "SELECT_END"},
+            IDLE: {name: "IDLE"},
+            MOVE_START: {name: "MOVE_START"},
+            MOVE_END: {name: "MOVE_END"},
+            PLAYING_ANIMATION: {
+                name: "PLAYING_ANIMATION",
+                prepareForTransition: () => handlePlay()
+            }
         }
     },
-    DRAW_WALL: {
-        name: "DRAW_WALL",
+    MOVE_START: {
+        name: "MOVE_START", 
         transitions: {
             IDLE: {name: "IDLE"},
-            SELECT_START: {name: "SELECT_START"},
-            SELECT_END: {name: "SELECT_END"},
-        }
-    },   
-    SELECT_START: {
-        name: "SELECT_START", 
-        transitions: {
-            IDLE: {name: "IDLE"},
-            DRAW_WALL: {name: "DRAW_WALL"},
-            SELECT_END: {name: "SELECT_END"},
+            MOVE_START: {name: "MOVE_START"},
+            MOVE_END: {name: "MOVE_END"},
         }
     }, 
-    SELECT_END: {
-        name: "SELECT_END", 
+    MOVE_END: {
+        name: "MOVE_END", 
         transitions: {
             IDLE: {name: "IDLE"},
-            DRAW_WALL: {name: "DRAW_WALL"},
-            SELECT_START: {name: "SELECT_START"},
+            MOVE_START: {name: "MOVE_START"},
+            MOVE_END: {name: "MOVE_END"},
+        }
+    }, 
+    PLAYING_ANIMATION: {
+        name: "PLAYING_ANIMATION", 
+        transitions: {
+            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
+            PAUSE: {name: "PAUSE"},
+            IDLE: {name: "IDLE"},
+        }
+    }, 
+    PAUSE: {
+        name: "PAUSE", 
+        transitions: {
+            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
+            PAUSE: {name: "PAUSE"},
+            IDLE: {name: "IDLE"},
         }
     }, 
 });
@@ -293,17 +384,10 @@ const stateMachine = new StateMachine(APPSTATE.IDLE);
 function handleAppState(state) {
     switch(state) {
         // is user pressed wall button, set to draw wall mode
-        case APPSTATE.DRAW_WALL:
-            stateMachine.state !== APPSTATE.DRAW_WALL ? stateMachine.transition(APPSTATE.DRAW_WALL) : stateMachine.transition(APPSTATE.IDLE)
-            break;
+        // case APPSTATE.DRAW_WALL:
+        //     stateMachine.state !== APPSTATE.DRAW_WALL ? stateMachine.transition(APPSTATE.DRAW_WALL) : stateMachine.transition(APPSTATE.IDLE)
+        //     break;
         // Place START
-        case APPSTATE.SELECT_START:
-            stateMachine.state !== APPSTATE.SELECT_START ? stateMachine.transition(APPSTATE.SELECT_START) : stateMachine.transition(APPSTATE.IDLE)
-            break;
-        // Place END
-        case APPSTATE.SELECT_END:
-            stateMachine.state !== APPSTATE.SELECT_END ? stateMachine.transition(APPSTATE.SELECT_END) : stateMachine.transition(APPSTATE.IDLE)
-            break;
         default: 
             stateMachine.transition(APPSTATE.IDLE);
     }
@@ -312,26 +396,136 @@ function handleAppState(state) {
 
 // toggle button appearance
 function toggleButtons() {
-    document.getElementById("wall-button").classList.remove("toggled");
-    document.getElementById("select-start-button").classList.remove("toggled");
-    document.getElementById("select-end-button").classList.remove("toggled");
+    // document.getElementById("wall-button").classList.remove("toggled");
     switch(stateMachine.state) {
         // is user pressed wall button, set to draw wall mode
-        case APPSTATE.DRAW_WALL:
-            document.getElementById("wall-button").classList.add("toggled");
-            break;
+        // case APPSTATE.DRAW_WALL:
+        //     document.getElementById("wall-button").classList.add("toggled");
+        //     break;
         // Place START
-        case APPSTATE.SELECT_START:
-            document.getElementById("select-start-button").classList.add("toggled");
-            break;
-        // Place END
-        case APPSTATE.SELECT_END:
-            document.getElementById("select-end-button").classList.add("toggled");
-            break;
         default: 
     }
 }
 
+function runAlgorithm(grid, algorithm, animationProgress) {
+    grid.clearVisited();
+
+    // incase you are already running an animation, makes sure it clears properly before starting again
+    window.requestIdleCallback(() => {
+        animationProgress.value = 0;
+        stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
+        
+        // run algorithm and then animate
+        algorithm(grid);
+        createPath(grid);
+        animationProgress.max = animationQueue.length;
+        animateSearch(animationProgress, 0);
+    })
+
+}
 
 
+function BFS(grid) {
+    const queue = [];
+    queue.push( grid.startNode );
+    while(queue.length > 0) {
+        const node = queue.shift();
+        if (node == grid.endNode) break;
+        if (!node.visited) {     
+            node.visited = true;
+            animationQueue.push( {node, type: "visit"} );
+            node.getNeighbors(grid).forEach(neighbor => {
+                if (!neighbor.visited && !neighbor.isWall) queue.push(neighbor);
+            });
+        }
+    }
+}
 
+function DFS(grid) {
+    const stack = [];
+    stack.push( grid.startNode );
+    while(stack.length > 0) {
+        let node = stack.pop();
+        if (node == grid.endNode) break;
+        if (!node.visited) {
+            node.visited = true;
+            animationQueue.push( {node, type: "visit"} );
+            node.getNeighbors(grid).forEach(neighbor => {
+                if (!neighbor.visited && !neighbor.isWall) stack.push(neighbor);
+            });
+        }
+    }
+}
+
+function animateSearch(animationProgress, animationQueueIndex) {
+    if (animationQueueIndex == animationQueue.length && stateMachine.state != APPSTATE.PAUSE) stateMachine.transition(APPSTATE.PAUSE);
+    if (stateMachine.state == APPSTATE.PAUSE) return;
+    setTimeout(function () {
+        if (animationQueueIndex < animationQueue.length) {
+            animationProgress.value++;
+            const { node, type } = animationQueue[animationQueueIndex];
+            if (stateMachine.state == APPSTATE.PAUSE) return;
+            type == "visit" ? node.setVisited(true) : node.setPath(true);
+            animateSearch(animationProgress, ++animationQueueIndex);
+            prevAnimationIndex = animationQueueIndex;
+        } else {
+            if (stateMachine.state != APPSTATE.PAUSE && stateMachine.state != APPSTATE.IDLE) stateMachine.transition(APPSTATE.PAUSE);
+        }
+    }, 5);
+}
+
+function handleAnimationProgress(value) {
+    stateMachine.transition(APPSTATE.PAUSE);
+
+    // if single stepping with arrow keys
+    if (prevAnimationIndex == value-1) {
+        const {node, type} = animationQueue[prevAnimationIndex];
+        type == "visit" ? node.setVisited(true) : node.setPath(true);
+
+    }
+    if (prevAnimationIndex == value+1) {
+        const {node, type} = animationQueue[prevAnimationIndex];
+        type == "visit" ? node.setVisited(false) : node.setPath(false);
+    }
+
+    // if jumping to a point in the animation, go over entire queue to be safe since repaint is async
+    else {
+        for (let x = 0; x < value; x++) {
+            const {node, type} = animationQueue[x];
+            // don't animate to prevent lag
+            type == "visit" ? node.setVisited(true, false) : node.setPath(true, false);
+        }
+        for (let x = value; x < animationQueue.length; x++) {
+            const {node, type} = animationQueue[x];
+            type == "visit" ? node.setVisited(false, false) : node.setPath(false, false);
+        }
+    }
+    prevAnimationIndex = value;
+}
+
+function handlePlay() {
+    const playButton = document.getElementById("play-button");
+    const animationProgress = document.getElementById("animation-progress");
+    console.log("arf", stateMachine.state);
+    if (stateMachine.state == APPSTATE.IDLE) {
+        playButton.innerHTML = "Pause";
+    } else if (stateMachine.state == APPSTATE.PLAYING_ANIMATION) {
+        stateMachine.transition(APPSTATE.PAUSE);
+        playButton.innerHTML = "Play";
+    } else if (stateMachine.state == APPSTATE.PAUSE) {
+        stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
+        playButton.innerHTML = "Play";
+        animateSearch(animationProgress, --animationProgress.value);
+    }
+}
+
+function createPath(grid) {
+    let node = grid.endNode;
+    let pathQueue = [];
+    
+    while (node.from) {
+        node = node.from;
+        pathQueue.unshift({node: node, type: "path"});
+    }
+    animationQueue = animationQueue.concat(pathQueue);
+}

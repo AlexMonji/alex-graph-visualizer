@@ -7,9 +7,16 @@
     <meta name="description" content="Frontend Practice Through Pathfinding Visualization">
     <meta name="author" content="Alex Monji">
     <style>
+      :root {
+        --visited-bg: rgb(49, 131, 255);
+        --visited-bg-animated: rgb(0, 102, 255);
+        --path-bg-animated: rgb(255, 174, 0);
+        --path-bg: rgb(255, 94, 0);
+      }
 
       * {
         box-sizing: border-box;
+        font-family: sans-serif;
       }
 
       body {
@@ -38,13 +45,43 @@
         height: 100%;
         width: 300px;
         background-color: white;
-        padding: 10px;
+        padding: 10px 0px 10px 10px;
+        display: flex;
+        flex-direction: column;
+        justify-content: space-evenly;
       }
 
-      #sidebar {
+      #algorithms {
         border: 1px solid rgb(95, 152, 218);
-        height: 100%;
+        height: 70%;
         width: 100%;
+        margin-bottom: 10px;
+        display: flex;
+        flex-wrap: wrap;
+      }
+
+      #legend {
+        border: 1px solid rgb(95, 152, 218);
+        height: 30%;
+        width: 100%;
+      }
+
+      .legend-item {
+        width: 100%;
+        display: flex;
+        justify-content: flex-start;
+        align-items: center;
+        padding: 5px;
+      }
+
+      .legend-item label {
+        margin-left: 5px;
+      }
+
+      #legend h1 {
+        font-size: 18px;
+        text-align: center;
+        margin: 5px 0px;
       }
 
       /* =================== GRID =================== */
@@ -116,6 +153,10 @@
         display: flex;
         align-items: center;
         cursor: pointer;
+      }
+
+      button:hover {
+        background-color:#2f6fe6;
       }
 
       button:active {
@@ -205,17 +246,12 @@
         box-sizing: border-box;
         border: 1px solid rgb(26, 90, 163);
         overflow: hidden;
-        transition: .2s;
+        transition: .15s;
       }
 
-      .node[size="12"] {
-        width: 12px;
-        height: 12px;
-      }
-      
-      .node[size="40"] {
-        width: 40px;
-        height: 40px;
+      .node:hover {
+        background-color:  rgba(52, 124, 206, 0.3);
+        transform: scale(1.2);
       }
 
       .node[isWall] {
@@ -232,16 +268,8 @@
       }
 
       .node[isStart] {
-        background-color:rgb(95, 255, 130);
-      }
-
-      .node[isStart][size="12"]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/home-24px.svg');
-        background-size: 9px 9px;
-        height: 9px;
-        width: 9px;
+        background-color:rgb(64, 255, 89);
+        cursor: pointer;
       }
 
       .node[isStart]:before {
@@ -253,27 +281,11 @@
         width: 21px;
       }
 
-      .node[isStart][size="40"]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/home-24px.svg');
-        background-size: 36px 36px;
-        height: 36px;
-        width: 36px;
-      }
-
       .node[isEnd] {
-        background-color:rgb(255, 100, 95);
+        background-color:rgb(255, 62, 56);
+        cursor: pointer;
       }
 
-      .node[isEnd][size="12"]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/flag-24px.svg');
-        background-size: 9px 9px;
-        height: 9px;
-        width: 9px;
-      }
 
       .node[isEnd]:before {
         display: block;
@@ -283,16 +295,105 @@
         height: 21px;
         width: 21px;
       }
-
-      .node[isEnd][size="40"]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/flag-24px.svg');
-        background-size: 36px 36px;
-        height: 36px;
-        width: 36px;
+        
+        
+      .visited {
+        background-color: var(--visited-bg);
       }
 
+      .visited-below {
+        animation-name: visitedBelow;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .visited-above {
+        animation-name: visitedAbove;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .visited-right {
+        animation-name: visitedRight;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+
+      .visited-left {
+        animation-name: visitedLeft;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .path {
+        background-color: var(--path-bg);
+      }
+
+      .path-below {
+        animation-name: pathBelow;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .path-above {
+        animation-name: pathAbove;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .path-right {
+        animation-name: pathRight;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+
+      .path-left {
+        animation-name: pathLeft;
+        animation-duration: .5s; 
+        animation-timing-function: ease-in-out; 
+        animation-delay: 0s;
+        animation-direction: forwards;
+        animation-iteration-count: 1;
+        animation-fill-mode: none;
+        animation-play-state: running;
+      }
+  
       /* =========== ANIMATIONS ============ */
       @keyframes bounce {
         0% {
@@ -307,35 +408,187 @@
         }
       }
 
+      @keyframes visitedBelow {
+        0% {
+          transform: translateY(24px);
+        }
+        30% {
+          transform: translateY(0px);
+        }
+        60% {
+          background-color: var(--visited-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes visitedAbove {
+        0% {
+          transform: translateY(-24px);
+        }
+        30% {
+          transform: translateY(0px);
+        }
+        60% {
+          background-color: var(--visited-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes visitedRight {
+        0% {
+          transform: translateX(24px);
+        }
+        30% {
+          transform: translateX(0px);
+        }
+        60% {
+          background-color: var(--visited-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes visitedLeft {
+        0% {
+          transform: translateX(-24px);
+        }
+        30% {
+          transform: translateX(0px);
+        }
+        60% {
+          background-color: var(--visited-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      /* path */
+
+      @keyframes pathAbove {
+        0% {
+          transform: translateY(-24px);
+        }
+        30% {
+          transform: translateY(0px);
+        }
+        60% {
+          background-color: var(--path-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes pathRight {
+        0% {
+          transform: translateX(24px);
+        }
+        30% {
+          transform: translateX(0px);
+        }
+        60% {
+          background-color: var(--path-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes pathLeft {
+        0% {
+          transform: translateX(-24px);
+        }
+        30% {
+          transform: translateX(0px);
+        }
+        60% {
+          background-color: var(--path-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      @keyframes pathBelow {
+        0% {
+          transform: translateY(24px);
+        }
+        30% {
+          transform: translateY(0px);
+        }
+        60% {
+          background-color: var(--path-bg-animated);
+        }
+        100% {
+          transform: scale(1.2);
+        }
+      }
+
+      #animation-controls {
+        display: flex;
+        flex-direction: column;
+        margin-bottom: 10px;
+      }
+
+      #animation-buttons {
+        display: flex;
+        justify-content: space-evenly;
+      }
+
     </style>
     <script type="module" src="app.js"></script>
   </head>
   <body>
     <nav>
-      <div class="tooltip">
-        <button id="select-start-button">Place Start
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="margin-left: 5px;"><path d="M10 20v-6h4v6h5v-8h3L12 3 2 12h3v8z"/><path d="M0 0h24v24H0z" fill="none"/></svg>
-        </button>
-        <label for="select-start-button" class="tooltiptext">Left click to place. <br/> Drag to move.</label>
-      </div>
-      <button id="select-end-button">Place End
-          <svg xmlns="http://www.w3.org/2000/svg" width="24" height="24" viewBox="0 0 24 24" style="margin-left: 5px;"><path d="M0 0h24v24H0z" fill="none"/><path d="M14.4 6L14 4H5v17h2v-7h5.6l.4 2h7V6z"/></svg>
-      </button>
-      <div class="tooltip">
+      <!-- div class="tooltip">
         <button id="wall-button">Place Wall</button>
         <label for="wall-button" class="tooltiptext">Left click to place. <br/> Right click to delete.</label>
-      </div>
-      <button id="clear-button">Clear All</button>
-      <div class="slider-container">
+      </div -->
+      <button id="clear-button">Clear</button>
+      <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
         <div class="slider-labels">Grid Size</div>
+      </div> -->
+      <div class="slider-container">
+        <div class="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div>
+        <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
+        <div class="slider-labels">Animation Speed</div>
       </div>
     </nav>
     <main>
       <div id="sidebar-container">
-        <section id="sidebar">
-          <button>BFS</button>
+        <section id="animation-controls">
+          <input id="animation-progress" type="range" value="0" min="0" max="0" step="1"/>
+          <div id="animation-buttons">
+            <button id="play-button" style="width: 50%;">Play</button>
+            <button id="reset-button" style="width: 50%;">Reset</button>
+          </div>
+        </section>
+        <section id="algorithms">
+          <button id="algorithm-BFS">BFS</button>
+          <button id="algorithm-DFS">DFS</button>
+        </section>
+        <section id="legend">
+          <h1>Legend</h1>
+          <div class="legend-item">
+            <div class="node" isStart></div>
+            <label>Start Node - Drag to move</label>
+          </div>
+          <div class="legend-item">
+            <div class="node" isEnd></div>
+            <label>End Node - Drag to move</label>
+          </div>
+          <div class="legend-item">
+            <div class="node" isWall></div>
+            <label>Wall - Right click to delete</label>
+          </div>
         </section>
       </div>
       <div id="gridContainer" class="noDrag">

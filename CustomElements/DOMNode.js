@@ -7,6 +7,7 @@ class DOMNode extends HTMLTableCellElement {
         this.row = node.row;
         this.col = node.col;
         this.node = node;
+        this.direction = null;
     }
 
     static get observedAttributes() {
@@ -34,17 +35,29 @@ class DOMNode extends HTMLTableCellElement {
         return this.node.isWall;
     }
 
-    set isVisited(value) {
-        const isVisited = Boolean(value);
-        if (isVisited) {
-            this.setAttribute('isVisited', '');
+    setVisited(value, direction) {
+        const visited = Boolean(value);
+        if (direction != "none" && direction != undefined && direction != null) { 
+            this.direction = direction;
+        }
+        if (visited) {
+            this.classList.add(`visited`);
+            if (direction != "none") this.classList.add(`visited-${direction}`);
         } else {
-            this.removeAttribute('isVisited');
+            this.classList.remove(`visited`);
+            this.classList.remove(`visited-${this.direction}`);
         }
     }
-      
-    get isVisited() {
-        return this.hasAttribute('isVisited');
+
+    setPath(value, direction) {
+        const isPath = Boolean(value);
+        if (isPath) {
+            this.classList.add(`path`);
+            if (direction != "none") this.classList.add(`path-${direction}`);
+        } else {
+            this.classList.remove(`path`);
+            this.classList.remove(`path-${this.direction}`);
+        }
     }
 
     set isStart(value) {
