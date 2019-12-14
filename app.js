@@ -1,13 +1,16 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
+import {BFS, DFS} from "./algorithms.js"
 
 let animationQueue = [];
+let animationProgress = null;
 let prevAnimationIndex = 0;
+let animationIndex = 0;
+let currAnimation = null;
+let currAlgorithm = null
 
 //Grid
 //  generateGrid(nodeSize)
-//  handleGridSize(nodeSize)
-//  clearGrid()
 //  handleGridSize(nodeSize)
 class Grid {
     constructor(){
@@ -17,6 +20,7 @@ class Grid {
         this.endNode = null;
         this.prevNode = null;
         this.nodeSizes = [40,24,12];
+        this.hasVisitedNodes = false;
     }
 
     generateGrid(nodeSize) {
@@ -60,25 +64,25 @@ class Grid {
     }
 
     // remove walls
-    clearGrid() {
+    ClearAll() {
         this.nodes.forEach(nodeRow => nodeRow.forEach(node => {
             node.setIsWall(false);
             node.visited = false;
+            node.from = null;
             node.DOMNode.setVisited(false);
             node.DOMNode.setPath(false);
         }));
-        animationQueue = [];
-        stateMachine.transition(APPSTATE.IDLE);
+        this.hasVisitedNodes = false;
     }
 
-    clearVisited() {
+    ClearVisited() {
         this.nodes.forEach(nodeRow => nodeRow.forEach(node => {
             node.visited = false;
+            node.from = null;
             node.DOMNode.setVisited(false);
             node.DOMNode.setPath(false);
         }));
-        animationQueue = [];
-        stateMachine.transition(APPSTATE.IDLE);
+        this.hasVisitedNodes = false;
     }
 
     // generate new grid if grid size changes
@@ -266,17 +270,17 @@ window.addEventListener("DOMContentLoaded", function() {
     // const gridSize = document.getElementById("grid-size");
     // gridSize.onchange = (evt) => grid.handleGridSize(evt.target.value);
     const playButton = document.getElementById("play-button");
-    playButton.onclick = handlePlay;
-    const animationProgress = document.getElementById("animation-progress");
+    playButton.onclick = () => handlePlay(grid);
+    animationProgress = document.getElementById("animation-progress");
     animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value);
     const BFSButton = document.getElementById("algorithm-BFS");
     BFSButton.onclick = () => runAlgorithm(grid, BFS, animationProgress, playButton);
     const DFSButton = document.getElementById("algorithm-DFS");
     DFSButton.onclick = () => runAlgorithm(grid, DFS, animationProgress, playButton);
     const clearButton = document.getElementById("clear-button");
-    clearButton.onclick = () => grid.clearGrid();
+    clearButton.onclick = () => Clear(grid);
     const resetButton = document.getElementById("reset-button");
-    resetButton.onclick = () => grid.clearVisited();
+    resetButton.onclick = () => Reset(grid);
 });
 
 // Node Logic Handlers
@@ -287,15 +291,19 @@ function NodeMouseEnter(grid, node, evt) {
     
     // wall drawing
     switch(stateMachine.state) {
+        case APPSTATE.PAUSE:
+            if ((leftMouseDown || rightMouseDown) && grid.hasVisitedNodes) grid.ClearVisited(); // if you try to draw a wall while paused, clear out the board
         case APPSTATE.IDLE:
-            if (leftMouseDown) node.setIsWall(true);
+            if (leftMouseDown && node != grid.startNode && node != grid.endNode) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             break;
         case APPSTATE.MOVE_START:
-            if (node != grid.endNode) grid.setStart(node);
+            if (node != grid.endNode && !node.isWall) grid.setStart(node);
+            if (currAlgorithm) instantAnimate(grid);
             break;
         case APPSTATE.MOVE_END:
-            if (node != grid.startNode) grid.setEnd(node);
+            if (node != grid.startNode && !node.isWall) grid.setEnd(node);
+            if (currAlgorithm) instantAnimate(grid);
             break;
     }
 }
@@ -314,6 +322,13 @@ function NodeMouseDown(grid, node, evt) {
             if (leftMouseDown) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             break;
+        case APPSTATE.PLAYING_ANIMATION:
+            stateMachine.transition(APPSTATE.PAUSE);;
+        case APPSTATE.PAUSE:
+            if (grid.hasVisitedNodes) grid.ClearVisited();
+            if (leftMouseDown) node.setIsWall(true);
+            if (rightMouseDown) node.setIsWall(false);
+
         default:
             break;
     }
@@ -338,10 +353,7 @@ const APPSTATE = Object.freeze({
             IDLE: {name: "IDLE"},
             MOVE_START: {name: "MOVE_START"},
             MOVE_END: {name: "MOVE_END"},
-            PLAYING_ANIMATION: {
-                name: "PLAYING_ANIMATION",
-                prepareForTransition: () => handlePlay()
-            }
+            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"}
         }
     },
     MOVE_START: {
@@ -358,14 +370,32 @@ const APPSTATE = Object.freeze({
             IDLE: {name: "IDLE"},
             MOVE_START: {name: "MOVE_START"},
             MOVE_END: {name: "MOVE_END"},
+            PAUSE: {name: "PAUSE"},
         }
     }, 
     PLAYING_ANIMATION: {
         name: "PLAYING_ANIMATION", 
         transitions: {
-            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
-            PAUSE: {name: "PAUSE"},
-            IDLE: {name: "IDLE"},
+            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION",
+                prepareForTransition: () => {
+                    clearInterval(currAnimation);
+                    currAnimation = null;
+                }
+            },
+            PAUSE: {
+                name: "PAUSE",
+                prepareForTransition: () => {
+                    clearInterval(currAnimation);
+                    currAnimation = null;
+                }
+            },
+            IDLE: {
+                name: "IDLE",
+                prepareForTransition: () => {
+                    clearInterval(currAnimation);
+                    currAnimation = null;
+                }
+            },
         }
     }, 
     PAUSE: {
@@ -374,6 +404,7 @@ const APPSTATE = Object.freeze({
             PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
             PAUSE: {name: "PAUSE"},
             IDLE: {name: "IDLE"},
+            MOVE_END: {name: "MOVE_END"},
         }
     }, 
 });
@@ -407,84 +438,51 @@ function toggleButtons() {
     }
 }
 
-function runAlgorithm(grid, algorithm, animationProgress) {
-    grid.clearVisited();
-
-    // incase you are already running an animation, makes sure it clears properly before starting again
-    window.requestIdleCallback(() => {
-        animationProgress.value = 0;
-        stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
-        
-        // run algorithm and then animate
-        algorithm(grid);
-        createPath(grid);
-        animationProgress.max = animationQueue.length;
-        animateSearch(animationProgress, 0);
-    })
+function runAlgorithm(grid, algorithm) {
+    currAlgorithm = algorithm;
+    // clean up visited nodes and reset animations & animation progress
+    grid.ClearVisited();
+    animationQueue = [];
+    animationIndex = 0;
+    animationProgress.value = 0;
+    stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
+    
+    // run algorithm and then animate
+    algorithm(grid, animationQueue);
+    animationQueue = animationQueue.concat(createPath(grid)); 
+    animationProgress.max = animationQueue.length;
+    grid.hasVisitedNodes = true;
+    currAnimation = setInterval(animateSearch, 5);
 
 }
 
-
-function BFS(grid) {
-    const queue = [];
-    queue.push( grid.startNode );
-    while(queue.length > 0) {
-        const node = queue.shift();
-        if (node == grid.endNode) break;
-        if (!node.visited) {     
-            node.visited = true;
-            animationQueue.push( {node, type: "visit"} );
-            node.getNeighbors(grid).forEach(neighbor => {
-                if (!neighbor.visited && !neighbor.isWall) queue.push(neighbor);
-            });
-        }
+// animate algorithm search
+function animateSearch() {
+    if (animationIndex < animationQueue.length) {
+        animationProgress.value++;
+        const { node, type } = animationQueue[animationIndex++];
+        type == "visit" ? node.setVisited(true) : node.setPath(true);
+        //animateSearch(animationProgress, ++animationIndex);
+        prevAnimationIndex = animationIndex;
+    } else {
+        clearInterval(currAnimation);
     }
 }
 
-function DFS(grid) {
-    const stack = [];
-    stack.push( grid.startNode );
-    while(stack.length > 0) {
-        let node = stack.pop();
-        if (node == grid.endNode) break;
-        if (!node.visited) {
-            node.visited = true;
-            animationQueue.push( {node, type: "visit"} );
-            node.getNeighbors(grid).forEach(neighbor => {
-                if (!neighbor.visited && !neighbor.isWall) stack.push(neighbor);
-            });
-        }
-    }
-}
 
-function animateSearch(animationProgress, animationQueueIndex) {
-    if (animationQueueIndex == animationQueue.length && stateMachine.state != APPSTATE.PAUSE) stateMachine.transition(APPSTATE.PAUSE);
-    if (stateMachine.state == APPSTATE.PAUSE) return;
-    setTimeout(function () {
-        if (animationQueueIndex < animationQueue.length) {
-            animationProgress.value++;
-            const { node, type } = animationQueue[animationQueueIndex];
-            if (stateMachine.state == APPSTATE.PAUSE) return;
-            type == "visit" ? node.setVisited(true) : node.setPath(true);
-            animateSearch(animationProgress, ++animationQueueIndex);
-            prevAnimationIndex = animationQueueIndex;
-        } else {
-            if (stateMachine.state != APPSTATE.PAUSE && stateMachine.state != APPSTATE.IDLE) stateMachine.transition(APPSTATE.PAUSE);
-        }
-    }, 5);
-}
-
+// when animation progress is handled by user
 function handleAnimationProgress(value) {
+    grid.hasVisitedNodes = true;
     stateMachine.transition(APPSTATE.PAUSE);
 
     // if single stepping with arrow keys
-    if (prevAnimationIndex == value-1) {
-        const {node, type} = animationQueue[prevAnimationIndex];
+    if (animationIndex == value-1) {
+        const {node, type} = animationQueue[animationIndex];
         type == "visit" ? node.setVisited(true) : node.setPath(true);
 
     }
-    if (prevAnimationIndex == value+1) {
-        const {node, type} = animationQueue[prevAnimationIndex];
+    if (animationIndex == value+1) {
+        const {node, type} = animationQueue[animationIndex];
         type == "visit" ? node.setVisited(false) : node.setPath(false);
     }
 
@@ -500,10 +498,38 @@ function handleAnimationProgress(value) {
             type == "visit" ? node.setVisited(false, false) : node.setPath(false, false);
         }
     }
-    prevAnimationIndex = value;
+    animationIndex = value;
 }
 
-function handlePlay() {
+
+// when start or end node is updated, immediately show search result
+let previousPath = []; // keep track of previous path for efficient clear
+function instantAnimate(grid) {
+    // start fresh and run algorithm
+    grid.nodes.forEach(nodeRow => nodeRow.forEach(node => node.visited = false));
+    previousPath.forEach(({node, type}) => node.setPath(false, false));
+    currAlgorithm(grid, animationQueue);
+
+    grid.nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        if (node.visited) {
+            node.setVisited(true, false)
+        } else {
+            node.setVisited(false, false);
+        }
+    }))
+
+    // draw path
+    previousPath = createPath(grid);
+    let pathNode = grid.endNode;
+    while (pathNode.from) {
+        pathNode.setPath(true, false);
+        pathNode = pathNode.from;
+    }
+}
+
+// play button handler, get rid of this eventually
+function handlePlay(grid) {
+    grid.hasVisitedNodes = true;
     const playButton = document.getElementById("play-button");
     const animationProgress = document.getElementById("animation-progress");
     console.log("arf", stateMachine.state);
@@ -511,21 +537,44 @@ function handlePlay() {
         playButton.innerHTML = "Pause";
     } else if (stateMachine.state == APPSTATE.PLAYING_ANIMATION) {
         stateMachine.transition(APPSTATE.PAUSE);
+        clearInterval(currAnimation);
+        currAnimation = null;
         playButton.innerHTML = "Play";
     } else if (stateMachine.state == APPSTATE.PAUSE) {
         stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
-        playButton.innerHTML = "Play";
-        animateSearch(animationProgress, --animationProgress.value);
+        playButton.innerHTML = "Pause";
+        currAnimation = setInterval(animateSearch, 5);
     }
 }
 
+// figure out the path
 function createPath(grid) {
     let node = grid.endNode;
     let pathQueue = [];
-    
     while (node.from) {
         node = node.from;
         pathQueue.unshift({node: node, type: "path"});
     }
-    animationQueue = animationQueue.concat(pathQueue);
+    if (grid.endNode.from) pathQueue.unshift({node: grid.endNode, type: "path"});
+    return pathQueue;
+}
+
+// clear button handler, clears everything
+function Clear(grid) {
+    animationQueue = [];
+    animationIndex = 0;
+    animationProgress.value = 0;
+    animationProgress.max = 0;
+    grid.ClearAll();
+    stateMachine.transition(APPSTATE.IDLE);
+}
+
+// reset button handler, clears everything except walls
+function Reset(grid) {
+    animationQueue = [];
+    animationIndex = 0;
+    animationProgress.value = 0;
+    animationProgress.max = 0;
+    grid.ClearVisited();
+    stateMachine.transition(APPSTATE.IDLE);
 }

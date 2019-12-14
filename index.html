@@ -247,23 +247,23 @@
         border: 1px solid rgb(26, 90, 163);
         overflow: hidden;
         transition: .15s;
+        animation-delay: 0s;
+        animation-duration: .5s; 
+        animation-iteration-count: 1;
+        animation-direction: forwards;
+        animation-fill-mode: forwards;
+        animation-play-state: running;
+        animation-fill-mode: none;
       }
 
       .node:hover {
         background-color:  rgba(52, 124, 206, 0.3);
-        transform: scale(1.2);
       }
 
       .node[isWall] {
         border-color:rgb(95, 152, 218);
         background-color: rgb(50, 79, 143);
-        animation-duration: .5s; 
         animation-timing-function: ease-out; 
-        animation-delay: 0s;
-        animation-iteration-count: 1;
-        animation-direction: forwards;
-        animation-fill-mode: forwards;
-        animation-play-state: running;
         animation-name: bounce;
       }
 
@@ -299,51 +299,23 @@
         
       .visited {
         background-color: var(--visited-bg);
+        animation-timing-function: ease-in-out; 
       }
 
       .visited-below {
         animation-name: visitedBelow;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .visited-above {
         animation-name: visitedAbove;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .visited-right {
         animation-name: visitedRight;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
-
 
       .visited-left {
         animation-name: visitedLeft;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .path {
@@ -352,46 +324,18 @@
 
       .path-below {
         animation-name: pathBelow;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .path-above {
         animation-name: pathAbove;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .path-right {
         animation-name: pathRight;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
 
       .path-left {
         animation-name: pathLeft;
-        animation-duration: .5s; 
-        animation-timing-function: ease-in-out; 
-        animation-delay: 0s;
-        animation-direction: forwards;
-        animation-iteration-count: 1;
-        animation-fill-mode: none;
-        animation-play-state: running;
       }
   
       /* =========== ANIMATIONS ============ */
@@ -414,12 +358,10 @@
         }
         30% {
           transform: translateY(0px);
+          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
         60% {
           background-color: var(--visited-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
         }
       }
 
@@ -429,12 +371,10 @@
         }
         30% {
           transform: translateY(0px);
+          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
         60% {
           background-color: var(--visited-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
         }
       }
 
@@ -444,12 +384,10 @@
         }
         30% {
           transform: translateX(0px);
+          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
         60% {
           background-color: var(--visited-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
         }
       }
 
@@ -459,12 +397,10 @@
         }
         30% {
           transform: translateX(0px);
+          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
         60% {
           background-color: var(--visited-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
         }
       }
 
