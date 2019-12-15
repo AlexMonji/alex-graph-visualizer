@@ -1,0 +1,107 @@
+:root {
+    --progress-height: 10px;
+    --visited-bg-animated: rgb(0, 102, 255);
+    --path-bg-animated: rgb(255, 174, 0);
+    --path-bg: rgb(255, 94, 0);
+  }
+
+
+/* hide default stylings */
+#animation-progress {
+    -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
+    width: 50%; /* Specific width is required for Firefox. */
+    background: #fff; /* Otherwise white in Chrome */
+    outline: none;
+
+}
+
+#animation-progress:hover::-webkit-slider-thumb {
+    height: 20px;
+    width: 20px;
+    margin-top: -7px;
+    border-radius: 100%;
+    visibility: visible;
+}
+
+
+/* webkit */
+#animation-progress::-webkit-slider-thumb {
+    -webkit-appearance: none;
+    visibility: hidden;
+    height: var(--progress-height);
+    width: 0px;
+    background: #ff0000;
+    cursor: pointer;
+    transition: .3s;
+}
+
+#animation-progress::-webkit-slider-runnable-track {
+    width: 100%;
+    height: var(--progress-height);
+    cursor: pointer;
+    margin-left: -2px;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    border-radius: 1.3px;
+    border: 0.2px solid #010101;
+}
+
+
+/* firefox */
+#animation-progress::-moz-range-thumb {
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    border: 1px solid #000000;
+    height: 36px;
+    width: 16px;
+    border-radius: 3px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+#animation-progress::-moz-range-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: pointer;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    background: #3071a9;
+    border-radius: 1.3px;
+    border: 0.2px solid #010101;
+}
+
+/* ie */
+#animation-progress::-ms-thumb {
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+    border: 1px solid #000000;
+    height: 36px;
+    width: 16px;
+    border-radius: 3px;
+    background: #ffffff;
+    cursor: pointer;
+}
+
+#animation-progress::-ms-track {
+    width: 100%;
+    height: 8.4px;
+    cursor: pointer;
+    background: transparent;
+    border-color: transparent;
+    border-width: 16px 0;
+    color: transparent;
+}
+#animation-progress::-ms-fill-lower {
+    background: #2a6495;
+    border: 0.2px solid #010101;
+    border-radius: 2.6px;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+#animation-progress:focus::-ms-fill-lower {
+    background: #3071a9;
+}
+#animation-progress::-ms-fill-upper {
+    background: #3071a9;
+    border: 0.2px solid #010101;
+    border-radius: 2.6px;
+    box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
+}
+#animation-progress:focus::-ms-fill-upper {
+    background: #367ebd;
+}

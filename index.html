@@ -246,7 +246,7 @@
         box-sizing: border-box;
         border: 1px solid rgb(26, 90, 163);
         overflow: hidden;
-        transition: .15s;
+        /* transition: .15s; */
         animation-delay: 0s;
         animation-duration: .5s; 
         animation-iteration-count: 1;
@@ -356,11 +356,11 @@
         0% {
           transform: translateY(24px);
         }
-        30% {
+        50% {
           transform: translateY(0px);
           box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
-        60% {
+        100% {
           background-color: var(--visited-bg-animated);
         }
       }
@@ -369,11 +369,11 @@
         0% {
           transform: translateY(-24px);
         }
-        30% {
+        50% {
           transform: translateY(0px);
           box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
-        60% {
+        100% {
           background-color: var(--visited-bg-animated);
         }
       }
@@ -382,11 +382,11 @@
         0% {
           transform: translateX(24px);
         }
-        30% {
+        50% {
           transform: translateX(0px);
           box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
-        60% {
+        100% {
           background-color: var(--visited-bg-animated);
         }
       }
@@ -395,11 +395,11 @@
         0% {
           transform: translateX(-24px);
         }
-        30% {
+        50% {
           transform: translateX(0px);
           box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
         }
-        60% {
+        100% {
           background-color: var(--visited-bg-animated);
         }
       }
@@ -466,18 +466,8 @@
         }
       }
 
-      #animation-controls {
-        display: flex;
-        flex-direction: column;
-        margin-bottom: 10px;
-      }
-
-      #animation-buttons {
-        display: flex;
-        justify-content: space-evenly;
-      }
-
     </style>
+    <link rel="stylesheet" type="text/css" href="controls.css">
     <script type="module" src="app.js"></script>
   </head>
   <body>
@@ -486,7 +476,10 @@
         <button id="wall-button">Place Wall</button>
         <label for="wall-button" class="tooltiptext">Left click to place. <br/> Right click to delete.</label>
       </div -->
-      <button id="clear-button">Clear</button>
+      <input id="animation-progress" type="range" value="0" min="0" max="0" step="1"/>
+      <button id="play-button">Play</button>
+      <button id="reset-button">Reset</button>
+      <button id="clear-button">Clear All</button>
       <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
@@ -500,13 +493,6 @@
     </nav>
     <main>
       <div id="sidebar-container">
-        <section id="animation-controls">
-          <input id="animation-progress" type="range" value="0" min="0" max="0" step="1"/>
-          <div id="animation-buttons">
-            <button id="play-button" style="width: 50%;">Play</button>
-            <button id="reset-button" style="width: 50%;">Reset</button>
-          </div>
-        </section>
         <section id="algorithms">
           <button id="algorithm-BFS">BFS</button>
           <button id="algorithm-DFS">DFS</button>
