@@ -392,7 +392,7 @@ function NodeMouseEnter(event, node) {
     // wall drawing
     switch(stateMachine.state) {
         case APPSTATE.PAUSE:
-            if (leftMouseDown) node.setIsWall(true);
+            if (leftMouseDown && node != startNode && node != endNode) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             if (leftMouseDown || rightMouseDown) InstantAnimate();
             break;
@@ -682,9 +682,8 @@ function GenerateNoise() {
     }))
 }
 
-const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
-
 function GeneratePerlinNoise() {
+    const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
     const rows = nodes.length;
     const cols = nodes[0].length;
     const numberTablesRow = 4;

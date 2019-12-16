@@ -28,74 +28,74 @@
 }
 
 .cost-1 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: 0;
 }
 .cost-2 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .1;
 }
 .cost-3 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .2;
 }
 .cost-4 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .3;
 }
 .cost-5 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .4;
 }
 .cost-6 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .5;
 }
 .cost-7 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .6;
 }
 .cost-8 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .7;
 }
 .cost-9 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .8;
 }
 .cost-10 {
-    background-color: rgb(0,255,150);
+    background-color: var(--weight-color);
     opacity: .9;
 }
 .visited.cost-1 {
-    opacity: .5;
+    opacity: .28;
 }
 .visited.cost-2 {
-    opacity: .55;
+    opacity: .36;
 }
 .visited.cost-3 {
-    opacity: .6;
+    opacity: .44;
 }
 .visited.cost-4 {
-    opacity: .65;
+    opacity: .52;
 }
 .visited.cost-5 {
-    opacity: .7;
+    opacity: .60;
 }
 .visited.cost-6 {
-    opacity: .75;
+    opacity: .68;
 }
 .visited.cost-7 {
-    opacity: .8;
+    opacity: .76;
 }
 .visited.cost-8 {
-    opacity: .85;
+    opacity: .84;
 }
 .visited.cost-9 {
-    opacity: .9;
+    opacity: .92;
 }
 .visited.cost-10 {
-    opacity: .95;
+    opacity: 1;
 }
 
 .visited {
