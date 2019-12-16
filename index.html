@@ -301,42 +301,52 @@
         background-color: var(--visited-bg);
         animation-timing-function: ease-in-out; 
       }
-
-      .visited-below {
+      .visited.animate.below {
         animation-name: visitedBelow;
       }
-
-      .visited-above {
+      .visited.animate.above {
         animation-name: visitedAbove;
       }
-
-      .visited-right {
+      .visited.animate.right {
         animation-name: visitedRight;
       }
-
-      .visited-left {
+      .visited.animate.left {
         animation-name: visitedLeft;
       }
 
       .path {
         background-color: var(--path-bg);
       }
-
-      .path-below {
+      .path.animate.below {
         animation-name: pathBelow;
       }
-
-      .path-above {
+      .path.animate.above {
         animation-name: pathAbove;
       }
-
-      .path-right {
+      .path.animate.right {
         animation-name: pathRight;
       }
-
-      .path-left {
+      .path.animate.left {
         animation-name: pathLeft;
       }
+
+      .path.above {
+        background-image: url('/svg/arrow_downward-24px.svg');
+        background-size: 23px 23px;
+      }
+      .path.right {
+        background-image: url('/svg/arrow_back-24px.svg');
+        background-size: 23px 23px;
+      }
+      .path.below {
+        background-image: url('/svg/arrow_upward-24px.svg');
+        background-size: 23px 23px;
+      }
+      .path.left {
+        background-image: url('/svg/arrow_forward-24px.svg');
+        background-size: 23px 23px;
+      }
+
   
       /* =========== ANIMATIONS ============ */
       @keyframes bounce {

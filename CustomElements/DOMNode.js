@@ -35,29 +35,39 @@ class DOMNode extends HTMLTableCellElement {
         return this.node.isWall;
     }
 
-    setVisited(value, direction) {
+    setVisited(value, direction, animate) {
         const visited = Boolean(value);
+
+        // set direction visited from
         if (direction != "none" && direction != undefined && direction != null) { 
+            if (direction != this.direction) this.classList.remove(`${this.direction}`);
             this.direction = direction;
         }
+
         if (visited) {
             this.classList.add(`visited`);
-            if (direction != "none") this.classList.add(`visited-${direction}`);
-        } else {
+            if (direction) this.classList.add(`${direction}`);
+            if (animate) this.classList.add("animate");
+        } 
+        // reset styling
+        else {
             this.classList.remove(`visited`);
-            this.classList.remove(`visited-${this.direction}`);
+            this.classList.remove(`${this.direction}`);
+            this.direction = null;
         }
     }
 
-    setPath(value, direction) {
+    setPath(value) {
         const isPath = Boolean(value);
         if (isPath) {
             this.classList.add(`path`);
-            if (direction != "none") this.classList.add(`path-${direction}`);
         } else {
             this.classList.remove(`path`);
-            this.classList.remove(`path-${this.direction}`);
         }
+    }
+
+    clearAnimate() {
+        this.classList.remove(`animate`);
     }
 
     set isStart(value) {

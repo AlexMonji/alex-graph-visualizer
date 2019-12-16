@@ -1,5 +1,5 @@
 :root {
-    --progress-height: 10px;
+    --progress-height: 14px;
     --visited-bg-animated: rgb(0, 102, 255);
     --path-bg-animated: rgb(255, 174, 0);
     --path-bg: rgb(255, 94, 0);
@@ -12,19 +12,16 @@
     width: 50%; /* Specific width is required for Firefox. */
     background: #fff; /* Otherwise white in Chrome */
     outline: none;
-
 }
 
+/* webkit */
 #animation-progress:hover::-webkit-slider-thumb {
-    height: 20px;
-    width: 20px;
-    margin-top: -7px;
+    height: 24px;
+    width: 24px;
+    margin-top: -6px;
     border-radius: 100%;
     visibility: visible;
 }
-
-
-/* webkit */
 #animation-progress::-webkit-slider-thumb {
     -webkit-appearance: none;
     visibility: hidden;
@@ -34,12 +31,10 @@
     cursor: pointer;
     transition: .3s;
 }
-
 #animation-progress::-webkit-slider-runnable-track {
     width: 100%;
     height: var(--progress-height);
     cursor: pointer;
-    margin-left: -2px;
     box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
     border-radius: 1.3px;
     border: 0.2px solid #010101;

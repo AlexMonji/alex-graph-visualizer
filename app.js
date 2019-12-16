@@ -178,8 +178,8 @@ function GenerateGrid() {
     // }
 
     // make rows and cols odd in number
-    const rows = Math.floor(height/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(height/nodeSize)+1;
-    const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(width/nodeSize)+1;
+    const rows = Math.floor(height/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(height/nodeSize)-1;
+    const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(width/nodeSize)-1;
 
     // generate nodes and DOM for nodes
     for (let row = 0; row < rows; row++) {
@@ -275,8 +275,7 @@ class Node {
     }
 
     setVisited(value, animate = true) {
-        if (animate) this.DOMNode.setVisited(value, this.direction);
-        else this.DOMNode.setVisited(value, "none");
+        this.DOMNode.setVisited(value, this.direction, animate);
     }
 
     setPath(value, animate = true) {
@@ -295,6 +294,10 @@ class Node {
 
     setIsEnd(value) {
         this.DOMNode.isEnd = value;
+    }
+
+    clearAnimate() {
+        this.DOMNode.clearAnimate();
     }
 }
 
@@ -452,7 +455,7 @@ function handleAnimationProgress(value) {
         type == "visit" ? node.setVisited(true) : node.setPath(true);
 
     }
-    if (animationIndex == value+1) {
+    else if (animationIndex == value+1) {
         const {node, type} = animationQueue[animationIndex];
         type == "visit" ? node.setVisited(false) : node.setPath(false);
     }
@@ -481,6 +484,8 @@ function InstantAnimate() {
         node.from = null; 
         node.isPath = false;
     }));
+
+    // clear previous path
     previousPath.forEach(({node, type}) => {
         node.setPath(false, false)
     });
@@ -489,13 +494,14 @@ function InstantAnimate() {
     animationQueue = currAlgorithm(startNode, endNode);
     previousPath = CreatePath(endNode);
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        if (node.isPath) {
-            node.setPath(true, false);
-        }
-        else if (node.visited) {
+        if (node.visited) {
+            node.clearAnimate();
             node.setVisited(true, false)
         } else {
             node.setVisited(false, false);
+        }
+        if (node.isPath) {
+            node.setPath(true, false);
         }
     }))
     animationQueue = animationQueue.concat(previousPath); 
@@ -503,13 +509,6 @@ function InstantAnimate() {
     animationProgress.value = animationQueue.length;
     UpdateAnimationProgressBar();
 
-    // draw path
-
-    // let pathNode = endNode;
-    // while (pathNode.from) {
-    //     pathNode.setPath(true, false);
-    //     pathNode = pathNode.from;
-    // }
     hasVisitedNodes = true;
 }
 
