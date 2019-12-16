@@ -1,0 +1,301 @@
+/* =================== NODE =================== */
+
+.weight-overlay {
+    width: 100%;
+    height: 100%;
+}
+
+.noDrag {
+    user-select: none;
+}
+
+.node {
+    width: 24px;
+    height: 24px;
+    box-sizing: border-box;
+    border: 1px solid rgb(26, 90, 163);
+    overflow: hidden;
+    /* transition: .15s; */
+    animation-delay: 0s;
+    animation-duration: .5s; 
+    animation-iteration-count: 1;
+    animation-play-state: running;
+    font-weight: bold;
+}
+
+.node:hover {
+    background-color:  rgba(52, 124, 206, 0.3);
+}
+
+.cost-0 {
+    background-color: rgb(0,255,150);
+    opacity: 0;
+}
+.cost-1 {
+    background-color: rgb(0,255,150);
+    opacity: .1;
+}
+.cost-2 {
+    background-color: rgb(0,255,150);
+    opacity: .2;
+}
+.cost-3 {
+    background-color: rgb(0,255,150);
+    opacity: .3;
+}
+.cost-4 {
+    background-color: rgb(0,255,150);
+    opacity: .4;
+}
+.cost-5 {
+    background-color: rgb(0,255,150);
+    opacity: .5;
+}
+.cost-6 {
+    background-color: rgb(0,255,150);
+    opacity: .6;
+}
+.cost-7 {
+    background-color: rgb(0,255,150);
+    opacity: .7;
+}
+.cost-8 {
+    background-color: rgb(0,255,150);
+    opacity: .8;
+}
+.cost-9 {
+    background-color: rgb(0,255,150);
+    opacity: .9;
+}
+.visited.cost-0 {
+    opacity: .5;
+}
+.visited.cost-1 {
+    opacity: .55;
+}
+.visited.cost-2 {
+    opacity: .6;
+}
+.visited.cost-3 {
+    opacity: .65;
+}
+.visited.cost-4 {
+    opacity: .7;
+}
+.visited.cost-5 {
+    opacity: .75;
+}
+.visited.cost-6 {
+    opacity: .8;
+}
+.visited.cost-7 {
+    opacity: .85;
+}
+.visited.cost-8 {
+    opacity: .9;
+}
+.visited.cost-9 {
+    opacity: .95;
+}
+
+.visited {
+    background-color: var(--visited-bg);
+    animation-timing-function: ease-in-out; 
+}
+.visited.animate.below {
+    animation-name: visitedBelow;
+}
+.visited.animate.above {
+    animation-name: visitedAbove;
+}
+.visited.animate.right {
+    animation-name: visitedRight;
+}
+.visited.animate.left {
+    animation-name: visitedLeft;
+}
+
+.path {
+    background-color: var(--path-bg);
+}
+.path.animate.below {
+    animation-name: pathBelow;
+}
+.path.animate.above {
+    animation-name: pathAbove;
+}
+.path.animate.right {
+    animation-name: pathRight;
+}
+.path.animate.left {
+    animation-name: pathLeft;
+}
+
+.path.above {
+    background-image: url('/svg/arrow_downward-24px.svg');
+    background-size: 24px 24px;
+}
+.path.right {
+    background-image: url('/svg/arrow_back-24px.svg');
+    background-size: 24px 24px;
+}
+.path.below {
+    background-image: url('/svg/arrow_upward-24px.svg');
+    background-size: 24px 24px;
+}
+.path.left {
+    background-image: url('/svg/arrow_forward-24px.svg');
+    background-size: 24px 24px;
+}
+
+.node[isStart] {
+    background-color:rgb(64, 255, 89);
+    background-image: url('/svg/home-24px.svg');
+    background-size: 24px 24px;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.node[isEnd] {
+    background-color:rgb(255, 62, 56);
+    background-image: url('/svg/flag-24px.svg');
+    background-size: 23px 23px;
+    cursor: pointer;
+    opacity: 1;
+}
+
+.node[isWall] {
+    border-color:rgb(95, 152, 218);
+    background-color: rgb(50, 79, 143);
+    animation-timing-function: ease-out; 
+    animation-name: bounce;
+    opacity: 1;
+}
+
+/* =========== ANIMATIONS ============ */
+@keyframes bounce {
+0% {
+    transform: scale(0);
+    border-radius: 10px;
+}
+50% {
+    transform: scale(1.2);
+}
+100% {
+    transform: scale(1);
+}
+}
+
+@keyframes visitedBelow {
+    0% {
+        transform: translateY(24px);
+    }
+    50% {
+        transform: translateY(0px);
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+@keyframes visitedAbove {
+    0% {
+        transform: translateY(-24px);
+    }
+    50% {
+        transform: translateY(0px);
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+@keyframes visitedRight {
+    0% {
+        transform: translateX(24px);
+    }
+    50% {
+        transform: translateX(0px);
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+@keyframes visitedLeft {
+    0% {
+        transform: translateX(-24px);
+    }
+    50% {
+        transform: translateX(0px);
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+/* path */
+
+@keyframes pathAbove {
+    0% {
+        transform: translateY(-24px);
+    }
+    30% {
+        transform: translateY(0px);
+    }
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes pathRight {
+    0% {
+        transform: translateX(24px);
+    }
+    30% {
+        transform: translateX(0px);
+    }
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes pathLeft {
+    0% {
+        transform: translateX(-24px);
+    }
+    30% {
+        transform: translateX(0px);
+    }
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}
+
+@keyframes pathBelow {
+    0% {
+        transform: translateY(24px);
+    }
+    30% {
+        transform: translateY(0px);
+    }
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+    100% {
+        transform: scale(1.2);
+    }
+}

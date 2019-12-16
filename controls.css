@@ -1,21 +1,78 @@
 :root {
     --progress-height: 14px;
-    --visited-bg-animated: rgb(0, 102, 255);
-    --path-bg-animated: rgb(255, 174, 0);
-    --path-bg: rgb(255, 94, 0);
-  }
+}
 
 
-/* hide default stylings */
+.slider-container {
+    margin: 5px;
+    display: flex;
+    height: 60px;
+    flex-direction: column;
+    justify-content: center;
+}
+.slider-labels {
+    display: flex;
+    justify-content: space-evenly;
+    height: 20px;
+    color: white;
+    font-family: sans-serif;
+    font-size: 16px;
+}
+.slider {
+    display: block;
+    -webkit-appearance: none;  
+    appearance: none;
+    width: 140px; 
+    height: 25px;
+    background: #ffffff; 
+    margin: 4px 20px;
+    outline: none; 
+    opacity: 0.9;
+    -webkit-transition: .2s; 
+    transition: opacity .2s;
+    border-radius: 90px;
+    box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+}
+.slider:hover {
+    opacity: 1; 
+}
+.slider::-webkit-slider-thumb {
+    -webkit-appearance: none; 
+    appearance: none;
+    width: 25px; 
+    height: 25px;
+    border-radius: 90%;
+    border: 3px solid rgb(78, 134, 255);
+    box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
+    background: white;
+    cursor: pointer;
+}
+.slider::-moz-range-thumb {
+    appearance: none;
+    width: 18px; 
+    height: 18px;
+    border-radius: 90%;
+    border: 3px solid rgb(78, 134, 255);
+    box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
+    background: white;
+    cursor: pointer;
+}
+
+
+/* =============================== interactive animation progress bar =============================== */
 #animation-progress {
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
     width: 50%; /* Specific width is required for Firefox. */
     background: #fff; /* Otherwise white in Chrome */
     outline: none;
+    cursor: pointer;
+}
+#animation-progress[disabled] {
+    cursor: not-allowed;
 }
 
 /* webkit */
-#animation-progress:hover::-webkit-slider-thumb {
+#animation-progress:not([disabled]):hover::-webkit-slider-thumb {
     height: 24px;
     width: 24px;
     margin-top: -6px;
@@ -28,13 +85,12 @@
     height: var(--progress-height);
     width: 0px;
     background: #ff0000;
-    cursor: pointer;
+
     transition: .3s;
 }
 #animation-progress::-webkit-slider-runnable-track {
     width: 100%;
     height: var(--progress-height);
-    cursor: pointer;
     box-shadow: 1px 1px 1px #000000, 0px 0px 1px #0d0d0d;
     border-radius: 1.3px;
     border: 0.2px solid #010101;
@@ -51,7 +107,6 @@
     background: #ffffff;
     cursor: pointer;
 }
-
 #animation-progress::-moz-range-track {
     width: 100%;
     height: 8.4px;
@@ -72,7 +127,6 @@
     background: #ffffff;
     cursor: pointer;
 }
-
 #animation-progress::-ms-track {
     width: 100%;
     height: 8.4px;

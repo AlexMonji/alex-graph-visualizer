@@ -163,321 +163,40 @@
         box-shadow: 2px 2px 4px 0px rgba(0, 0, 0, 0.2);
       }
 
-      .slider {
-        display: block;
-        -webkit-appearance: none;  
-        appearance: none;
-        width: 140px; 
-        height: 25px;
-        background: #ffffff; 
-        margin: 4px 20px;
-        outline: none; 
-        opacity: 0.9;
-        -webkit-transition: .2s; 
-        transition: opacity .2s;
-        border-radius: 90px;
-        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
-      }
-
-      .slider:hover {
-        opacity: 1; 
-      }
-
-      .slider::-webkit-slider-thumb {
-        -webkit-appearance: none; 
-        appearance: none;
-        width: 25px; 
-        height: 25px;
-        border-radius: 90%;
-        border: 3px solid rgb(78, 134, 255);
-        box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
-        background: white;
-        cursor: pointer;
-      }
-
-      .slider::-moz-range-thumb {
-        appearance: none;
-        width: 18px; 
-        height: 18px;
-        border-radius: 90%;
-        border: 3px solid rgb(78, 134, 255);
-        box-shadow: 1px 1px 2px 1px rgba(0, 0, 0, 0.2);
-        background: white;
-        cursor: pointer;
-      }
-
-      .slider-container {
-        margin: 5px;
-        display: flex;
-        height: 60px;
-        flex-direction: column;
-        justify-content: center;
-      }
-
-      .slider-labels {
-        display: flex;
-        justify-content: space-evenly;
-        height: 20px;
-        color: white;
-        font-family: sans-serif;
-        font-size: 16px;
-      }
-
       .toggled {
         background-color:rgb(7, 196, 209);
       }
 
-      /* =================== NODE =================== */
-      .noDrag {
-        -webkit-user-select: none;
-        -khtml-user-select: none;
-        -moz-user-select: none;
-        -o-user-select: none;
-        user-select: none;
+      output {
+        color: white;
+        width: 80px;
+        text-align: left;
+        margin-left: 5px;
       }
 
-      tr {
-        width: 100%;
+      #play-button {
+        min-width: 40px;
+        height: 40px;
+        width: 40px;
+        border-radius: 100%;
+        background-repeat: no-repeat;
+        background-size: 40px 40px;
+        outline: none;
       }
-
-      .node {
-        width: 24px;
-        height: 24px;
-        box-sizing: border-box;
-        border: 1px solid rgb(26, 90, 163);
-        overflow: hidden;
-        /* transition: .15s; */
-        animation-delay: 0s;
-        animation-duration: .5s; 
-        animation-iteration-count: 1;
-        animation-direction: forwards;
-        animation-fill-mode: forwards;
-        animation-play-state: running;
-        animation-fill-mode: none;
+      #play-button.play {
+        background-image: url("/svg/play_arrow-24px.svg");
       }
-
-      .node:hover {
-        background-color:  rgba(52, 124, 206, 0.3);
+      #play-button.pause {
+        background-image: url("/svg/pause-24px.svg");
       }
-
-      .node[isWall] {
-        border-color:rgb(95, 152, 218);
-        background-color: rgb(50, 79, 143);
-        animation-timing-function: ease-out; 
-        animation-name: bounce;
-      }
-
-      .node[isStart] {
-        background-color:rgb(64, 255, 89);
-        cursor: pointer;
-      }
-
-      .node[isStart]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/home-24px.svg');
-        background-size: 21px 21px;
-        height: 21px;
-        width: 21px;
-      }
-
-      .node[isEnd] {
-        background-color:rgb(255, 62, 56);
-        cursor: pointer;
-      }
-
-
-      .node[isEnd]:before {
-        display: block;
-        content: '';
-        background-image: url('/svg/flag-24px.svg');
-        background-size: 21px 21px;
-        height: 21px;
-        width: 21px;
-      }
-        
-        
-      .visited {
-        background-color: var(--visited-bg);
-        animation-timing-function: ease-in-out; 
-      }
-      .visited.animate.below {
-        animation-name: visitedBelow;
-      }
-      .visited.animate.above {
-        animation-name: visitedAbove;
-      }
-      .visited.animate.right {
-        animation-name: visitedRight;
-      }
-      .visited.animate.left {
-        animation-name: visitedLeft;
-      }
-
-      .path {
-        background-color: var(--path-bg);
-      }
-      .path.animate.below {
-        animation-name: pathBelow;
-      }
-      .path.animate.above {
-        animation-name: pathAbove;
-      }
-      .path.animate.right {
-        animation-name: pathRight;
-      }
-      .path.animate.left {
-        animation-name: pathLeft;
-      }
-
-      .path.above {
-        background-image: url('/svg/arrow_downward-24px.svg');
-        background-size: 23px 23px;
-      }
-      .path.right {
-        background-image: url('/svg/arrow_back-24px.svg');
-        background-size: 23px 23px;
-      }
-      .path.below {
-        background-image: url('/svg/arrow_upward-24px.svg');
-        background-size: 23px 23px;
-      }
-      .path.left {
-        background-image: url('/svg/arrow_forward-24px.svg');
-        background-size: 23px 23px;
-      }
-
-  
-      /* =========== ANIMATIONS ============ */
-      @keyframes bounce {
-        0% {
-          transform: scale(0);
-          border-radius: 10px;
-        }
-        50% {
-          transform: scale(1.2);
-        }
-        100% {
-          transform: scale(1);
-        }
-      }
-
-      @keyframes visitedBelow {
-        0% {
-          transform: translateY(24px);
-        }
-        50% {
-          transform: translateY(0px);
-          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
-        }
-        100% {
-          background-color: var(--visited-bg-animated);
-        }
-      }
-
-      @keyframes visitedAbove {
-        0% {
-          transform: translateY(-24px);
-        }
-        50% {
-          transform: translateY(0px);
-          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
-        }
-        100% {
-          background-color: var(--visited-bg-animated);
-        }
-      }
-
-      @keyframes visitedRight {
-        0% {
-          transform: translateX(24px);
-        }
-        50% {
-          transform: translateX(0px);
-          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
-        }
-        100% {
-          background-color: var(--visited-bg-animated);
-        }
-      }
-
-      @keyframes visitedLeft {
-        0% {
-          transform: translateX(-24px);
-        }
-        50% {
-          transform: translateX(0px);
-          box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
-        }
-        100% {
-          background-color: var(--visited-bg-animated);
-        }
-      }
-
-      /* path */
-
-      @keyframes pathAbove {
-        0% {
-          transform: translateY(-24px);
-        }
-        30% {
-          transform: translateY(0px);
-        }
-        60% {
-          background-color: var(--path-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
-        }
-      }
-
-      @keyframes pathRight {
-        0% {
-          transform: translateX(24px);
-        }
-        30% {
-          transform: translateX(0px);
-        }
-        60% {
-          background-color: var(--path-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
-        }
-      }
-
-      @keyframes pathLeft {
-        0% {
-          transform: translateX(-24px);
-        }
-        30% {
-          transform: translateX(0px);
-        }
-        60% {
-          background-color: var(--path-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
-        }
-      }
-
-      @keyframes pathBelow {
-        0% {
-          transform: translateY(24px);
-        }
-        30% {
-          transform: translateY(0px);
-        }
-        60% {
-          background-color: var(--path-bg-animated);
-        }
-        100% {
-          transform: scale(1.2);
-        }
+      #play-button[disabled] {
+        background-color: grey;
+        cursor: not-allowed;
       }
 
     </style>
     <link rel="stylesheet" type="text/css" href="controls.css">
+    <link rel="stylesheet" type="text/css" href="node.css">
     <script type="module" src="app.js"></script>
   </head>
   <body>
@@ -486,10 +205,12 @@
         <button id="wall-button">Place Wall</button>
         <label for="wall-button" class="tooltiptext">Left click to place. <br/> Right click to delete.</label>
       </div -->
-      <input id="animation-progress" type="range" value="0" min="0" max="0" step="1"/>
-      <button id="play-button">Play</button>
+      <button id="play-button" class="play" disabled></button>
+      <input id="animation-progress" type="range" value="0" min="0" max="0" step="1" disabled/>
+      <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>
       <button id="reset-button">Reset</button>
       <button id="clear-button">Clear All</button>
+      <button id="generate-noise-button">Generate Noise</button>
       <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
@@ -506,6 +227,7 @@
         <section id="algorithms">
           <button id="algorithm-BFS">BFS</button>
           <button id="algorithm-DFS">DFS</button>
+          <button id="algorithm-Dijkstra">Dijkstra</button>
         </section>
         <section id="legend">
           <h1>Legend</h1>
@@ -524,6 +246,8 @@
         </section>
       </div>
       <div id="gridContainer" class="noDrag">
+        <table id="weight-map" class="noDrag">
+        </table>
         <table id="grid" class="noDrag">
         </table>
       </div>

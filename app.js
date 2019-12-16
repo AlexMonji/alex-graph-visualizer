@@ -1,6 +1,6 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
-import {BFS, DFS} from "./algorithms.js"
+import {BFS, DFS, Dijkstra} from "./algorithms.js"
 
 let animationQueue = [];
 let animationProgress = null;
@@ -9,11 +9,13 @@ let animationIndex = 0;
 let currAnimation = null;
 let currAlgorithm = null;
 
+let animationCounter = null;
+let animationCounterMax = null;
+
 // nodes
 let nodes = [];
 let startNode = null;
 let endNode = null;
-let hasVisitedNodes = false;
 
 let previousPath = []; // keep track of previous path for efficient clear
 
@@ -27,7 +29,8 @@ class StateMachine {
 
     transition(state) {
         // attempt to transition to next state
-        let nextState = this.state.transitions[state.name]
+        let nextState = APPSTATE[state.name]
+        let nextStateTransition = this.state.transitions[state.name];
         
         // if next state doesn't exist, show default error and don't transition
         if (!nextState) {
@@ -35,18 +38,16 @@ class StateMachine {
             return;
         }
         // if next state has an error, call its error function and don't transition
-        if (nextState.error) { 
-            nextState.error();
+        if (nextStateTransition.error) { 
+            nextStateTransition.error();
             return
         }
         
-        if (nextState.animation) {
-            nextState.animation();
-        }
+        if (this.state.prepareForExitAll) this.state.prepareForExit.prepareForExitAll();
+        if (nextState.prepareForEnterAll) nextState.prepareForEnterAll();
+        if (nextStateTransition.animation) nextState.animation();
+        if (nextStateTransition.prepareForEnter) nextStateTransition.prepareForEnter();
 
-        if (nextState.prepareForTransition) {
-            nextState.prepareForTransition();
-        }
         
         if (this.state != APPSTATE[state.name]) this.prevState = this.state; // don't set prevState if next state is the same as current
         this.state = APPSTATE[state.name];
@@ -72,12 +73,15 @@ class StateMachine {
 const APPSTATE = Object.freeze({
     IDLE: {
         name: "IDLE", 
+        prepareForEnterAll: () => {
+            TogglePlayButton("disable");
+        },
         transitions: {
             IDLE: {name: "IDLE"},
             MOVE_START: {name: "MOVE_START"},
             MOVE_END: {name: "MOVE_END"},
             PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"}
-        }
+        },
     },
     MOVE_START: {
         name: "MOVE_START", 
@@ -98,49 +102,56 @@ const APPSTATE = Object.freeze({
         }
     }, 
     PLAYING_ANIMATION: {
-        name: "PLAYING_ANIMATION", 
+        name: "PLAYING_ANIMATION",
+        prepareForEnterAll: () => {
+            TogglePlayButton("pause");
+        }, 
         transitions: {
             PLAYING_ANIMATION: {
                 name: "PLAYING_ANIMATION",
-                prepareForTransition: () => {
+                prepareForEnter: () => {
                     clearInterval(currAnimation);
-                    currAnimation = null;
                 }
             },
             PAUSE: {
                 name: "PAUSE",
-                prepareForTransition: () => {
+                prepareForEnter: () => {
                     clearInterval(currAnimation);
-                    currAnimation = null;
                 }
             },
             IDLE: {
                 name: "IDLE",
-                prepareForTransition: () => {
+                prepareForEnter: () => {
                     clearInterval(currAnimation);
                     currAnimation = null;
                 }
             },
             MOVE_END: {
                 name: "MOVE_END",
-                prepareForTransition: () => {
+                prepareForEnter: () => {
                     clearInterval(currAnimation);
-                    currAnimation = null;
                 }
             },
             MOVE_START: {
                 name: "MOVE_START",
-                prepareForTransition: () => {
+                prepareForEnter: () => {
                     clearInterval(currAnimation);
-                    currAnimation = null;
                 }
             }
         }
     }, 
     PAUSE: {
         name: "PAUSE", 
+        prepareForEnterAll: () => {
+            TogglePlayButton("play");
+        },
         transitions: {
-            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
+            PLAYING_ANIMATION: {
+                name: "PLAYING_ANIMATION",
+                prepareForEnter: () => {
+                    currAnimation = setInterval(AnimateSearch, 5);
+                }
+            },
             PAUSE: {name: "PAUSE"},
             IDLE: {name: "IDLE"},
             MOVE_END: {name: "MOVE_END"},
@@ -223,6 +234,7 @@ class Node {
         this.isWall = false;
         this.direction = null;
         this.visited = false;
+        this.cost = 1; // default one, unweighted
         this.from = null; // the neighbor that visited this node 
     }
 
@@ -235,7 +247,7 @@ class Node {
         let neighbor = null;
         if (col+1 < colLength) {
             neighbor = nodes[row][col+1];
-            if (!neighbor.visited) {
+            if (!neighbor.visited && !neighbor.isWall) {
                 neighbor.from = this;
                 neighbor.direction = "left";
                 neighbors.push( neighbor );
@@ -243,7 +255,7 @@ class Node {
         }
         if (row+1 < rowLength) {
             neighbor = nodes[row+1][col];
-            if (!neighbor.visited) {
+            if (!neighbor.visited && !neighbor.isWall) {
                 neighbor.from = this;
                 neighbor.direction = "above";
                 neighbors.push( neighbor );
@@ -251,7 +263,7 @@ class Node {
         }
         if (col-1 >= 0) {
             neighbor = nodes[row][col-1];
-            if (!neighbor.visited) {
+            if (!neighbor.visited && !neighbor.isWall) {
                 neighbor.from = this;
                 neighbor.direction = "right";
                 neighbors.push( neighbor );
@@ -259,7 +271,7 @@ class Node {
         }
         if (row-1 >= 0) {
             neighbor = nodes[row-1][col];
-            if (!neighbor.visited) {
+            if (!neighbor.visited && !neighbor.isWall) {
                 neighbor.from = this;
                 neighbor.direction = "below";
                 neighbors.push( neighbor );
@@ -267,11 +279,38 @@ class Node {
         }
         return neighbors;
     }
-    
-    clearAttributes() {
-        this.DOMNode.isStart = false;
-        this.DOMNode.isEnd = false;
-        this.DOMNode.isWall = false;
+
+    getAllNeighbors() {
+        const {row, col} = this;
+        const neighbors = [];
+        const colLength = nodes[0].length;
+        const rowLength = nodes.length
+        let neighbor = null;
+        if (col+1 < colLength) {
+            neighbor = nodes[row][col+1];
+            if (!neighbor.isWall) {
+                neighbors.push( {neighbor, direction: "left"} );
+            }
+        }
+        if (row+1 < rowLength) {
+            neighbor = nodes[row+1][col];
+            if (!neighbor.isWall) {
+                neighbors.push( {neighbor, direction: "above"} );
+            }
+        }
+        if (col-1 >= 0) {
+            neighbor = nodes[row][col-1];
+            if (!neighbor.isWall) {
+                neighbors.push( {neighbor, direction: "right"} );
+            }
+        }
+        if (row-1 >= 0) {
+            neighbor = nodes[row-1][col];
+            if (!neighbor.isWall) {
+                neighbors.push( {neighbor, direction: "below"} );
+            }
+        }
+        return neighbors;
     }
 
     setVisited(value, animate = true) {
@@ -329,10 +368,17 @@ window.addEventListener("DOMContentLoaded", function() {
     BFSButton.onclick = () => RunAlgorithm(BFS);
     const DFSButton = document.getElementById("algorithm-DFS");
     DFSButton.onclick = () => RunAlgorithm(DFS);
+    const DijkstraButton = document.getElementById("algorithm-Dijkstra");
+    DijkstraButton.onclick = () => RunAlgorithm(Dijkstra);
     const clearButton = document.getElementById("clear-button");
     clearButton.onclick = () => Clear(grid);
     const resetButton = document.getElementById("reset-button");
     resetButton.onclick = () => Reset(grid);
+    animationCounter = document.getElementById("animation-index");
+    animationCounterMax = document.getElementById("animation-index-max");
+
+    const generateNoiseButton = document.getElementById("generate-noise-button");
+    generateNoiseButton.onclick = () => GenerateNoise();
 });
 
 // Node Logic Handlers
@@ -344,7 +390,6 @@ function NodeMouseEnter(event, node) {
     // wall drawing
     switch(stateMachine.state) {
         case APPSTATE.PAUSE:
-            //if ((leftMouseDown || rightMouseDown) && hasVisitedNodes) ClearVisited(); // if you try to draw a wall while paused, clear out the board
             if (leftMouseDown) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             if (leftMouseDown || rightMouseDown) InstantAnimate();
@@ -381,7 +426,6 @@ function NodeMouseDown(event, node) {
         case APPSTATE.PLAYING_ANIMATION:
             stateMachine.transition(APPSTATE.PAUSE);
         case APPSTATE.PAUSE:
-            //if (hasVisitedNodes) ClearVisited();
             if (leftMouseDown) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             InstantAnimate();
@@ -415,14 +459,14 @@ function RunAlgorithm(algorithm) {
     animationIndex = 0;
     animationProgress.value = 0;
     stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
-    
+    if (currAnimation) clearInterval(currAnimation); // if going from pause to play causes an animation to start, cancel it and start a new one
+
     // run algorithm and then animate
-    animationQueue = algorithm(startNode, endNode);
+    animationQueue = algorithm(startNode, endNode, nodes);
     const path = CreatePath(endNode)
     previousPath = path;
     animationQueue = animationQueue.concat(path); 
     animationProgress.max = animationQueue.length;
-    hasVisitedNodes = true;
     currAnimation = setInterval(AnimateSearch, 5);
     animationProgress.focus();
 }
@@ -437,6 +481,7 @@ function AnimateSearch() {
         UpdateAnimationProgressBar();
     } else {
         clearInterval(currAnimation);
+        stateMachine.transition(APPSTATE.PAUSE);
     }
 }
 
@@ -446,8 +491,7 @@ function handleAnimationProgress(value) {
     animationProgress.value = value;
     UpdateAnimationProgressBar();
     
-    hasVisitedNodes = true;
-    if (stateMachine.state != APPSTATE.PAUSE) stateMachine.transition(APPSTATE.PAUSE);
+    stateMachine.transition(APPSTATE.PAUSE);
 
     // if single stepping with arrow keys
     if (animationIndex == value-1) {
@@ -469,10 +513,20 @@ function handleAnimationProgress(value) {
         }
         for (let x = value; x < animationQueue.length; x++) {
             const {node, type} = animationQueue[x];
-            type == "visit" ? node.setVisited(false, false) : node.setPath(false, false);
+            if (type == "visit") {
+                node.clearAnimate();
+                node.setVisited(false, false);
+            } else {
+                node.clearAnimate();
+                node.setPath(false, false);
+            }
         }
     }
     animationIndex = value;
+
+    if (value == animationProgress.max) {
+        stateMachine.transition(APPSTATE.PAUSE);
+    }
 }
 
 
@@ -491,7 +545,7 @@ function InstantAnimate() {
     });
 
     // create path and set animationQueue incase user wants to jump to an earlier point
-    animationQueue = currAlgorithm(startNode, endNode);
+    animationQueue = currAlgorithm(startNode, endNode, nodes);
     previousPath = CreatePath(endNode);
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         if (node.visited) {
@@ -509,26 +563,23 @@ function InstantAnimate() {
     animationProgress.value = animationQueue.length;
     UpdateAnimationProgressBar();
 
-    hasVisitedNodes = true;
 }
 
 // play button handler, get rid of this eventually
-function handlePlay(grid) {
-    grid.hasVisitedNodes = true;
-    const playButton = document.getElementById("play-button");
-    const animationProgress = document.getElementById("animation-progress");
-    console.log("arf", stateMachine.state);
-    if (stateMachine.state == APPSTATE.IDLE) {
-        playButton.innerHTML = "Pause";
-    } else if (stateMachine.state == APPSTATE.PLAYING_ANIMATION) {
+function handlePlay() {
+    // if at end of progress, restart if press play
+    if (animationProgress.value == animationProgress.max) {
+        animationIndex = 0;
+        animationProgress.value = 0;
+        ClearVisited();
+        stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
+        UpdateAnimationProgressBar();
+        return;
+    }
+    if (stateMachine.state == APPSTATE.PLAYING_ANIMATION) {
         stateMachine.transition(APPSTATE.PAUSE);
-        clearInterval(currAnimation);
-        currAnimation = null;
-        playButton.innerHTML = "Play";
     } else if (stateMachine.state == APPSTATE.PAUSE) {
         stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
-        playButton.innerHTML = "Pause";
-        currAnimation = setInterval(AnimateSearch, 5);
     }
 }
 
@@ -578,7 +629,6 @@ function ClearAll() {
         node.DOMNode.setVisited(false);
         node.DOMNode.setPath(false);
     }));
-    hasVisitedNodes = false;
 }
 
 // clear visited state
@@ -589,7 +639,6 @@ function ClearVisited() {
         node.DOMNode.setVisited(false);
         node.DOMNode.setPath(false);
     }));
-    hasVisitedNodes = false;
 }
 
 function UpdateAnimationProgressBar(value = null){
@@ -599,4 +648,34 @@ function UpdateAnimationProgressBar(value = null){
         if (value != null) animationProgress.value = value
         animationProgress.style.background = `linear-gradient(to right, #ff0000 0%, #ff0000 ${((animationProgress.value/animationProgress.max)*100).toFixed(2)}%, #fff ${((animationProgress.value/animationProgress.max)*100).toFixed(2)}%, white 100%)`
     }
+    animationCounter.textContent = animationProgress.value;
+    animationCounterMax.textContent = animationProgress.max;
+}
+
+function TogglePlayButton(toggle) {
+    const playButton = document.getElementById("play-button");
+    switch(toggle) {
+        case "play": 
+            playButton.className = "play";
+            playButton.disabled = false;
+            animationProgress.disabled = false;
+            break;
+        case "pause": 
+            playButton.className = "pause";
+            playButton.disabled = false;
+            animationProgress.disabled = false;
+            break;
+        case "disable":
+            animationProgress.disabled = true;
+            playButton.disabled = true;
+    } 
+}
+
+function GenerateNoise() {
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        node.cost = parseInt(Math.random()*10);
+        //node.DOMNode.textContent = node.cost;
+        //node.DOMNode.style.backgroundColor = `rgba(0,255,150,${node.cost/10})`;
+        node.DOMNode.classList.add(`cost-${node.cost}`);
+    }))
 }
