@@ -318,8 +318,7 @@ class Node {
     }
 
     setPath(value, animate = true) {
-        if (animate) this.DOMNode.setPath(value, this.direction);
-        else this.DOMNode.setPath(value, "none");     
+        this.DOMNode.setPath(value, animate);     
     }
 
     setIsWall(value) {
@@ -379,6 +378,9 @@ window.addEventListener("DOMContentLoaded", function() {
 
     const generateNoiseButton = document.getElementById("generate-noise-button");
     generateNoiseButton.onclick = () => GenerateNoise();
+    //perlin-noise-button
+    const perlinNoiseButton = document.getElementById("perlin-noise-button");
+    perlinNoiseButton.onclick = () => GeneratePerlinNoise();
 });
 
 // Node Logic Handlers
@@ -678,4 +680,82 @@ function GenerateNoise() {
         //node.DOMNode.style.backgroundColor = `rgba(0,255,150,${node.cost/10})`;
         node.DOMNode.classList.add(`cost-${node.cost}`);
     }))
+}
+
+const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
+
+function GeneratePerlinNoise() {
+    const rows = nodes.length;
+    const cols = nodes[0].length;
+    const numberTablesRow = 4;
+    const numberTablesCol = 5;
+    const tableRows = parseInt(rows/numberTablesRow)+1; // rows per mini grid
+    const tableCols = parseInt(cols/numberTablesCol)+1; // cols per minigrid
+    // split grid into numberTablesRow * numberTablesCol many smaller grids
+    // generate gradient vectors
+    let tableGradientVectors = [];
+    for(let x = 0; x < numberTablesRow + 1; x++) {
+        const tableGradientVectorsRow = [];
+        for(let y = 0; y < numberTablesCol + 1; y++) {
+            tableGradientVectorsRow.push(gradientVectors[Math.floor(Math.random() * gradientVectors.length)]);
+        }
+        tableGradientVectors.push(tableGradientVectorsRow)
+    }
+    for (let gr = 0; gr < numberTablesRow; gr++) {
+        for (let gc = 0; gc < numberTablesCol; gc++) {
+            const gridGradientVectorTopLeft = tableGradientVectors[gr][gc];
+            const gridGradientVectorTopRight = tableGradientVectors[gr][gc+1];
+            const gridGradientVectorBottomRight = tableGradientVectors[gr+1][gc+1];
+            const gridGradientVectorBottomLeft = tableGradientVectors[gr+1][gc];
+            // for each cell inside the smaller grid
+            for (let r = 0; r < tableRows; r++) {
+                const actualRow = gr*tableRows+r;
+                for (let c = 0; c < tableCols; c++) {
+                    const actualCol = gc*tableCols+c;
+                    if (actualCol >= cols || actualRow >= rows) continue;
+                    const localXOffset = Fade(c/(tableCols-1));
+                    const localYOffset = Fade(r/(tableRows-1));
+                    const distanceVectorTopLeft = [localXOffset, 1-localYOffset];
+                    const distanceVectorTopRight = [localXOffset-1, 1-localYOffset];
+                    const distanceVectorBottomRight = [localXOffset-1, localYOffset];
+                    const distanceVectorBottomLeft = [localXOffset, localYOffset];
+                    const dotA = DotProduct(gridGradientVectorTopLeft,distanceVectorTopLeft); // dotProd from top left
+                    const dotB = DotProduct(gridGradientVectorTopRight,distanceVectorTopRight); // dotProd from top right
+                    const dotC = DotProduct(gridGradientVectorBottomLeft,distanceVectorBottomLeft); 
+                    const dotD = DotProduct(gridGradientVectorBottomRight,distanceVectorBottomRight);
+                    const AB = dotA + localXOffset * (dotB - dotA); // interpolate between top left and top right
+                    const CD = dotC + localXOffset * (dotD - dotC); // interpolate between bottom left and bottom right
+                    const value = AB + localYOffset * (CD - AB);
+                    const nodeCost = Math.floor(Clamp(value*5+5,1, 10.99));
+                    nodes[actualRow][actualCol].cost = nodeCost;
+                    nodes[actualRow][actualCol].DOMNode.classList.add(`cost-${nodeCost}`);
+                }
+            }   
+        }
+    }
+}
+/*
+                    const distanceVectorTopLeft = [Fade(r/tableCols), Fade(c/tableCols)];
+                    const distanceVectorTopRight = [Fade(r/tableCols), Fade(1-c/tableCols)];
+                    const distanceVectorBottomRight = [Fade(1-r/tableCols), Fade(1-c/tableCols)];
+                    const distanceVectorBottomLeft = [Fade(1-r/tableCols), Fade(c/tableCols)];
+                    const dotA = DotProduct(gridGradientVectorTopLeft,distanceVectorTopLeft);
+                    const dotB = DotProduct(gridGradientVectorTopRight,distanceVectorTopRight);
+                    const dotC = DotProduct(gridGradientVectorBottomRight,distanceVectorBottomRight);
+                    const dotD = DotProduct(gridGradientVectorBottomLeft,distanceVectorBottomLeft);
+                    const AB = Fade(dotA + Fade(c/tableCols) * (dotB - dotA));
+                    const CD = Fade(dotC + Fade(c/tableCols) * (dotD - dotC));
+                    const value = AB + Fade(r/tableRows) * (CD - AB);
+*/
+
+function DotProduct(vec1, vec2) {
+    return vec1[0]*vec2[0] + vec1[1]*vec2[1];
+}
+
+function Clamp(number, min, max) {
+    return Math.max(min, Math.min(number, max));
+}
+
+function Fade(t){
+    return t*t*t*(6*t*t-(15*t)+10); //6t^5 -15t^4+10t^3
 }

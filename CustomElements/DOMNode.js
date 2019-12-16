@@ -57,9 +57,10 @@ class DOMNode extends HTMLTableCellElement {
         }
     }
 
-    setPath(value) {
+    setPath(value, animate) {
         const isPath = Boolean(value);
         if (isPath) {
+            if (animate) this.classList.add("animate")
             this.classList.add(`path`);
         } else {
             this.classList.remove(`path`);

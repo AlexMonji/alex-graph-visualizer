@@ -27,74 +27,74 @@
     background-color:  rgba(52, 124, 206, 0.3);
 }
 
-.cost-0 {
+.cost-1 {
     background-color: rgb(0,255,150);
     opacity: 0;
 }
-.cost-1 {
+.cost-2 {
     background-color: rgb(0,255,150);
     opacity: .1;
 }
-.cost-2 {
+.cost-3 {
     background-color: rgb(0,255,150);
     opacity: .2;
 }
-.cost-3 {
+.cost-4 {
     background-color: rgb(0,255,150);
     opacity: .3;
 }
-.cost-4 {
+.cost-5 {
     background-color: rgb(0,255,150);
     opacity: .4;
 }
-.cost-5 {
-    background-color: rgb(0,255,150);
-    opacity: .5;
-}
 .cost-6 {
     background-color: rgb(0,255,150);
-    opacity: .6;
+    opacity: .5;
 }
 .cost-7 {
     background-color: rgb(0,255,150);
-    opacity: .7;
+    opacity: .6;
 }
 .cost-8 {
     background-color: rgb(0,255,150);
-    opacity: .8;
+    opacity: .7;
 }
 .cost-9 {
     background-color: rgb(0,255,150);
-    opacity: .9;
-}
-.visited.cost-0 {
-    opacity: .5;
-}
-.visited.cost-1 {
-    opacity: .55;
-}
-.visited.cost-2 {
-    opacity: .6;
-}
-.visited.cost-3 {
-    opacity: .65;
-}
-.visited.cost-4 {
-    opacity: .7;
-}
-.visited.cost-5 {
-    opacity: .75;
-}
-.visited.cost-6 {
     opacity: .8;
 }
-.visited.cost-7 {
-    opacity: .85;
-}
-.visited.cost-8 {
+.cost-10 {
+    background-color: rgb(0,255,150);
     opacity: .9;
 }
+.visited.cost-1 {
+    opacity: .5;
+}
+.visited.cost-2 {
+    opacity: .55;
+}
+.visited.cost-3 {
+    opacity: .6;
+}
+.visited.cost-4 {
+    opacity: .65;
+}
+.visited.cost-5 {
+    opacity: .7;
+}
+.visited.cost-6 {
+    opacity: .75;
+}
+.visited.cost-7 {
+    opacity: .8;
+}
+.visited.cost-8 {
+    opacity: .85;
+}
 .visited.cost-9 {
+    opacity: .9;
+}
+.visited.cost-10 {
     opacity: .95;
 }
 
@@ -243,8 +243,6 @@
     }
     60% {
         background-color: var(--path-bg-animated);
-    }
-    100% {
         transform: scale(1.2);
     }
 }
@@ -258,8 +256,6 @@
     }
     60% {
         background-color: var(--path-bg-animated);
-    }
-    100% {
         transform: scale(1.2);
     }
 }
@@ -273,8 +269,6 @@
     }
     60% {
         background-color: var(--path-bg-animated);
-    }
-    100% {
         transform: scale(1.2);
     }
 }
@@ -288,8 +282,6 @@
     }
     60% {
         background-color: var(--path-bg-animated);
-    }
-    100% {
         transform: scale(1.2);
     }
 }
