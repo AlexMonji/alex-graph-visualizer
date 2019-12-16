@@ -52,12 +52,18 @@
       }
 
       #algorithms {
+        position: relative;
         border: 1px solid rgb(95, 152, 218);
         height: 70%;
         width: 100%;
         margin-bottom: 10px;
-        display: flex;
-        flex-wrap: wrap;
+        padding: 0 5px;
+      }
+
+      #algorithms button {
+        width: 100%;
+        margin-right: 0;
+        margin-left: 0;
       }
 
       #legend {
@@ -78,7 +84,7 @@
         margin-left: 5px;
       }
 
-      #legend h1 {
+      .section-title {
         font-size: 18px;
         text-align: center;
         margin: 5px 0px;
@@ -225,12 +231,15 @@
     <main>
       <div id="sidebar-container">
         <section id="algorithms">
+          <h1 class="section-title">Unweighted Algorithms</h1>
           <button id="algorithm-BFS">BFS</button>
           <button id="algorithm-DFS">DFS</button>
+          <br/>
+          <h1 class="section-title">Weighted Algorithms</h1>
           <button id="algorithm-Dijkstra">Dijkstra</button>
         </section>
         <section id="legend">
-          <h1>Legend</h1>
+          <h1 class="section-title">Legend</h1>
           <div class="legend-item">
             <div class="node" isStart></div>
             <label>Start Node - Drag to move</label>
