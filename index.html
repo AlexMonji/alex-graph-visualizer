@@ -173,7 +173,7 @@
         justify-content: space-around;
         padding-left: 10px;
         padding-right: 10px;
-        margin: 5px;
+
         min-width: 80px;
         height: 40px;
         border-radius: 3px;
@@ -188,11 +188,17 @@
         user-select: none;
       }
 
+      summary:hover {
+        background-color:#2f6fe6;
+      }
+
       details {
+        margin: 5px;
         position: relative;
       }
 
       .details-body {
+        margin-top: 5px;
         z-index: 10;
         border-radius: 5px;
         position: absolute;
@@ -210,11 +216,11 @@
       }
 
       .details-body option:hover {
-        background-color: #5892ff;
+        background-color:#2f6fe6;
       }
 
       .details-body option:focus {
-        background-color: #5892ff;
+        background-color:#2f6fe6;
       }
 
 
