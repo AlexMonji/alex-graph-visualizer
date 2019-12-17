@@ -1,5 +1,4 @@
 import DOMNode from "./CustomElements/DOMNode.js"
-import DOMRow from "./CustomElements/DOMRow.js"
 import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
 import {DotProduct, Clamp, Fade} from "./util.js"
 
@@ -720,7 +719,8 @@ function GeneratePerlinNoise() {
     const rows = nodes.length;
     const cols = nodes[0].length;
     const numberTablesRow = Math.floor(Math.random()*3+2); // vary number of mini grids
-    const numberTablesCol = Math.floor(numberTablesRow*1.4);
+    const numberTablesCol = Math.floor(numberTablesRow*cols/rows); // try to keep mini grids square by adjusting for ratio of cols to rows
+
     const tableRows = parseInt(rows/numberTablesRow)+1; // rows per mini grid
     const tableCols = parseInt(cols/numberTablesCol)+1; // cols per mini grid
     // split grid into numberTablesRow * numberTablesCol many smaller grids

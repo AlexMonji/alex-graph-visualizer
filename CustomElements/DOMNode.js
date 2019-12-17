@@ -1,5 +1,3 @@
-let nodeTemplate = document.createElement('template');
-
 class DOMNode extends HTMLTableCellElement {
     constructor(node, nodeEventHandlers) {
         super();
