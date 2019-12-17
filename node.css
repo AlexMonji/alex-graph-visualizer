@@ -102,16 +102,16 @@
     background-color: var(--visited-bg);
     animation-timing-function: ease-in-out; 
 }
-.visited.animate.below {
+.visited.animate.below:not([weighted]) {
     animation-name: visitedBelow;
 }
-.visited.animate.above {
+.visited.animate.above:not([weighted]) {
     animation-name: visitedAbove;
 }
-.visited.animate.right {
+.visited.animate.right:not([weighted]) {
     animation-name: visitedRight;
 }
-.visited.animate.left {
+.visited.animate.left:not([weighted]) {
     animation-name: visitedLeft;
 }
 

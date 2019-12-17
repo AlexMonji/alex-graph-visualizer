@@ -75,7 +75,9 @@ export function AStar(startNode, endNode, nodes) {
     // calculate h-cost for each node
     const animationQueue = [];
     nodes.forEach(nodeRow => nodeRow.forEach((node,index) => {
-        node.hCost = Math.abs(endNode.col - node.col) + Math.abs(endNode.row - node.row);
+        node.hCost = node.hCost = Math.abs(endNode.col - node.col) + Math.abs(endNode.row - node.row);
+        // Distance is not the below equation because can't move diagonally
+        // Math.sqrt((endNode.col - node.col)*(endNode.col - node.col) + (endNode.row - node.row)*(endNode.row - node.row));   
         node.gCost = Number.POSITIVE_INFINITY;
     }))
     startNode.gCost = 0;

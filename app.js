@@ -591,11 +591,16 @@ function handlePlay() {
 function CreatePath(endNode) {
     let node = endNode;
     let pathQueue = [];
+    let costOfPath = 0;
     while (node.from) {
         node = node.from;
         node.isPath = true;
-        if (node != startNode) pathQueue.push({node: node, type: "path"});
+        if (node != startNode) { 
+            pathQueue.push({node: node, type: "path"});
+            costOfPath += node.cost;
+        }
     }
+    document.getElementById("cost-of-path").textContent = costOfPath;
     return pathQueue.reverse();;
 }
 
@@ -680,9 +685,11 @@ function GenerateNoise(noiseAlgorithm) {
         perlin: GeneratePerlinNoise,
     }
 
+    // clear weights
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.DOMNode.classList.remove(`cost-${node.cost}`);
         node.cost = 1;
+        node.DOMNode.removeAttribute("weighted");
     }))
 
     if(noiseAlgorithm == "clear") return;
@@ -695,6 +702,7 @@ function GenerateRandomNoise() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.cost = parseInt(Math.random()*10);
         node.DOMNode.classList.add(`cost-${node.cost}`);
+        node.DOMNode.setAttribute("weighted", "weighted");
     }))
 }
 
@@ -744,6 +752,7 @@ function GeneratePerlinNoise() {
                     const nodeCost = Math.floor(Clamp(value*5+5,1, 10.99));
                     nodes[actualRow][actualCol].cost = nodeCost;
                     nodes[actualRow][actualCol].DOMNode.classList.add(`cost-${nodeCost}`);
+                    nodes[actualRow][actualCol].DOMNode.setAttribute("weighted", "weighted");
                 }
             }   
         }
