@@ -70,3 +70,44 @@ export function Dijkstra(startNode, endNode, nodes) {
     }
     return animationQueue;
 }
+
+export function AStar(startNode, endNode, nodes) {
+    // calculate h-cost for each node
+    const animationQueue = [];
+    nodes.forEach(nodeRow => nodeRow.forEach((node,index) => {
+        node.hCost = Math.abs(endNode.col - node.col) + Math.abs(endNode.row - node.row);
+        node.gCost = Number.POSITIVE_INFINITY;
+    }))
+    startNode.gCost = 0;
+    startNode.fCost = 0;
+    const heap = [startNode];
+    while(heap.length > 0) {
+        heap.sort((a, b) => b.fCost - a.fCost);
+        let node = heap.pop();
+        if (node == endNode) break;
+        if (!node.visited) {
+            node.visited = true;
+            animationQueue.push( {node, type: "visit"} );
+            node.getAllNeighbors().forEach(({neighbor, direction}) => {
+                // first time seeing neighbor, add it to the set
+                if (!neighbor.visited) {
+                    if (neighbor.gCost == Number.POSITIVE_INFINITY) {
+                        neighbor.gCost = node.gCost + neighbor.cost;
+                        neighbor.fCost = neighbor.gCost + neighbor.hCost;
+                        neighbor.from = node;
+                        neighbor.direction = direction;
+                        heap.push(neighbor)
+                    // otherwise seen it before, update its weight and the node leading to it if the weight is better
+                    } else if (node.gCost + neighbor.cost + neighbor.hCost < neighbor.fCost && !neighbor.visited) {
+                        neighbor.from = node;
+                        neighbor.direction = direction;
+                        neighbor.gCost = node.gCost + neighbor.cost;
+                        neighbor.fCost = neighbor.gCost + neighbor.hCost;
+                    }
+                }
+
+            });
+        }
+    }
+    return animationQueue;
+}

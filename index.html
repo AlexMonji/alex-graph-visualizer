@@ -162,6 +162,54 @@
         cursor: pointer;
       }
 
+      summary {
+        justify-content: space-around;
+        padding-left: 10px;
+        padding-right: 10px;
+        margin: 5px;
+        min-width: 80px;
+        height: 40px;
+        border-radius: 3px;
+        border: 0px solid white;
+        font-size: 20px;
+        color: white;
+        background-color:#4184ff;
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+        display: flex;
+        align-items: center;
+        cursor: pointer;
+      }
+
+      details {
+        position: relative;
+      }
+
+      #details-body {
+        z-index: 10;
+        border-radius: 5px;
+        position: absolute;
+        width: 100%;
+        background-color: #4184ff;
+        color: white;
+        overflow: hidden;
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
+      }
+
+      #details-body option {
+        padding: 5px 5px;
+        font-size: 20px;
+        cursor: pointer;
+      }
+
+      #details-body option:hover {
+        background-color: #5892ff;
+      }
+
+      #details-body option:focus {
+        background-color: #5892ff;
+      }
+
+
       button:hover {
         background-color:#2f6fe6;
       }
@@ -217,8 +265,14 @@
       <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>
       <button id="reset-button">Reset</button>
       <button id="clear-button">Clear All</button>
-      <button id="generate-noise-button">Generate Noise</button>
-      <button id="perlin-noise-button">Perlin Noise</button>
+      <details>
+        <summary>Generate Noise</summary>
+        <div id="details-body">
+          <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
+          <option value="random" class="noDrag" tabindex="2">Random Noise</option>
+          <option value="perlin" class="noDrag" tabindex="3">Perlin Noise</option>
+        </div>
+    </details>
       <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
@@ -239,6 +293,7 @@
           <br/>
           <h1 class="section-title">Weighted Algorithms</h1>
           <button id="algorithm-Dijkstra">Dijkstra</button>
+          <button id="algorithm-A*">A*</button>
         </section>
         <section id="legend">
           <h1 class="section-title">Legend</h1>
@@ -264,7 +319,7 @@
       </div>
     </main>
     <script>
-      
+
     </script>
   </body>
 </html>

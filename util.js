@@ -1,26 +1,11 @@
-// when start or end node is updated, immediately show search result
+export function DotProduct(vec1, vec2) {
+    return vec1[0]*vec2[0] + vec1[1]*vec2[1];
+}
 
-export function InstantAnimate(nodes, startNode, endNode, previousPath) {
-    // start fresh and run algorithm
-    nodes.forEach(nodeRow => nodeRow.forEach(node => node.visited = false));
-    previousPath.forEach(({node, type}) => node.setPath(false, false));
-    currAlgorithm(startNode, endNode);
+export function Clamp(number, min, max) {
+    return Math.max(min, Math.min(number, max));
+}
 
-    nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        if (node.visited) {
-            node.setVisited(true, false)
-        } else {
-            node.setVisited(false, false);
-        }
-    }))
-
-    // draw path
-    const newPath = CreatePath(endNode);
-    let pathNode = endNode;
-    while (pathNode.from) {
-        pathNode.setPath(true, false);
-        pathNode = pathNode.from;
-    }
-
-    return newPath;
+export function Fade(t){
+    return t*t*t*(6*t*t-(15*t)+10); //6t^5 -15t^4+10t^3
 }

@@ -1,10 +1,10 @@
 import DOMNode from "./CustomElements/DOMNode.js"
 import DOMRow from "./CustomElements/DOMRow.js"
-import {BFS, DFS, Dijkstra} from "./algorithms.js"
+import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
+import {DotProduct, Clamp, Fade} from "./util.js"
 
 let animationQueue = [];
 let animationProgress = null;
-let prevAnimationIndex = 0;
 let animationIndex = 0;
 let currAnimation = null;
 let currAlgorithm = null;
@@ -31,9 +31,9 @@ class StateMachine {
         // attempt to transition to next state
         let nextState = APPSTATE[state.name]
         let nextStateTransition = this.state.transitions[state.name];
-        
+
         // if next state doesn't exist, show default error and don't transition
-        if (!nextState) {
+        if (!nextStateTransition) {
             alert(`No transition ${this.state.name} => ${state.name}`);
             return;
         }
@@ -80,7 +80,8 @@ const APPSTATE = Object.freeze({
             IDLE: {name: "IDLE"},
             MOVE_START: {name: "MOVE_START"},
             MOVE_END: {name: "MOVE_END"},
-            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"}
+            PLAYING_ANIMATION: {name: "PLAYING_ANIMATION"},
+            PAUSE: {name: "PAUSE"}
         },
     },
     MOVE_START: {
@@ -369,6 +370,8 @@ window.addEventListener("DOMContentLoaded", function() {
     DFSButton.onclick = () => RunAlgorithm(DFS);
     const DijkstraButton = document.getElementById("algorithm-Dijkstra");
     DijkstraButton.onclick = () => RunAlgorithm(Dijkstra);
+    const AStarButton = document.getElementById("algorithm-A*");
+    AStarButton.onclick = () => RunAlgorithm(AStar);
     const clearButton = document.getElementById("clear-button");
     clearButton.onclick = () => Clear(grid);
     const resetButton = document.getElementById("reset-button");
@@ -376,11 +379,8 @@ window.addEventListener("DOMContentLoaded", function() {
     animationCounter = document.getElementById("animation-index");
     animationCounterMax = document.getElementById("animation-index-max");
 
-    const generateNoiseButton = document.getElementById("generate-noise-button");
-    generateNoiseButton.onclick = () => GenerateNoise();
-    //perlin-noise-button
-    const perlinNoiseButton = document.getElementById("perlin-noise-button");
-    perlinNoiseButton.onclick = () => GeneratePerlinNoise();
+    const generateNoiseSelect = document.getElementById("details-body");
+    [...generateNoiseSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateNoise(evt.target.value));
 });
 
 // Node Logic Handlers
@@ -465,6 +465,7 @@ function RunAlgorithm(algorithm) {
 
     // run algorithm and then animate
     animationQueue = algorithm(startNode, endNode, nodes);
+    animationQueue.shift(); // get rid of start node;
     const path = CreatePath(endNode)
     previousPath = path;
     animationQueue = animationQueue.concat(path); 
@@ -479,7 +480,6 @@ function AnimateSearch() {
         animationProgress.value++;
         const { node, type } = animationQueue[animationIndex++];
         type == "visit" ? node.setVisited(true) : node.setPath(true);
-        prevAnimationIndex = animationIndex;
         UpdateAnimationProgressBar();
     } else {
         clearInterval(currAnimation);
@@ -534,6 +534,7 @@ function handleAnimationProgress(value) {
 
 // when start or end node is updated, immediately show search result
 function InstantAnimate() {
+    if (!currAnimation) return;
     // start fresh and run algorithm
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.visited = false;
@@ -548,6 +549,7 @@ function InstantAnimate() {
 
     // create path and set animationQueue incase user wants to jump to an earlier point
     animationQueue = currAlgorithm(startNode, endNode, nodes);
+    animationQueue.shift(); // remove start node from animation
     previousPath = CreatePath(endNode);
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         if (node.visited) {
@@ -556,7 +558,7 @@ function InstantAnimate() {
         } else {
             node.setVisited(false, false);
         }
-        if (node.isPath) {
+        if (node.isPath && node != startNode) {
             node.setPath(true, false);
         }
     }))
@@ -592,10 +594,9 @@ function CreatePath(endNode) {
     while (node.from) {
         node = node.from;
         node.isPath = true;
-        pathQueue.unshift({node: node, type: "path"});
+        if (node != startNode) pathQueue.push({node: node, type: "path"});
     }
-    if (endNode.from) pathQueue.unshift({node: endNode, type: "path"});
-    return pathQueue;
+    return pathQueue.reverse();;
 }
 
 // clear button handler, clears everything
@@ -604,9 +605,9 @@ function Clear() {
     animationIndex = 0;
     animationProgress.value = 0;
     animationProgress.max = 0;
-    UpdateAnimationProgressBar();
     currAlgorithm = null;
     ClearAll();
+    UpdateAnimationProgressBar();
     stateMachine.transition(APPSTATE.IDLE);
 }
 
@@ -616,9 +617,9 @@ function Reset() {
     animationIndex = 0;
     animationProgress.value = 0;
     animationProgress.max = 0;
-    UpdateAnimationProgressBar();
     currAlgorithm = null;
     ClearVisited();
+    UpdateAnimationProgressBar();
     stateMachine.transition(APPSTATE.IDLE);
 }
 
@@ -673,11 +674,26 @@ function TogglePlayButton(toggle) {
     } 
 }
 
-function GenerateNoise() {
+function GenerateNoise(noiseAlgorithm) {
+    const algorithms = {
+        random: GenerateRandomNoise,
+        perlin: GeneratePerlinNoise,
+    }
+
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        node.DOMNode.classList.remove(`cost-${node.cost}`);
+        node.cost = 1;
+    }))
+
+    if(noiseAlgorithm == "clear") return;
+    algorithms[noiseAlgorithm](); // run algorithm
+    stateMachine.transition(APPSTATE.PAUSE);
+    InstantAnimate(); // finish animation
+}
+
+function GenerateRandomNoise() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.cost = parseInt(Math.random()*10);
-        //node.DOMNode.textContent = node.cost;
-        //node.DOMNode.style.backgroundColor = `rgba(0,255,150,${node.cost/10})`;
         node.DOMNode.classList.add(`cost-${node.cost}`);
     }))
 }
@@ -686,10 +702,10 @@ function GeneratePerlinNoise() {
     const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
     const rows = nodes.length;
     const cols = nodes[0].length;
-    const numberTablesRow = 4;
-    const numberTablesCol = 5;
+    const numberTablesRow = Math.floor(Math.random()*3+2); // vary number of mini grids
+    const numberTablesCol = Math.floor(numberTablesRow*1.4);
     const tableRows = parseInt(rows/numberTablesRow)+1; // rows per mini grid
-    const tableCols = parseInt(cols/numberTablesCol)+1; // cols per minigrid
+    const tableCols = parseInt(cols/numberTablesCol)+1; // cols per mini grid
     // split grid into numberTablesRow * numberTablesCol many smaller grids
     // generate gradient vectors
     let tableGradientVectors = [];
@@ -733,28 +749,4 @@ function GeneratePerlinNoise() {
         }
     }
 }
-/*
-                    const distanceVectorTopLeft = [Fade(r/tableCols), Fade(c/tableCols)];
-                    const distanceVectorTopRight = [Fade(r/tableCols), Fade(1-c/tableCols)];
-                    const distanceVectorBottomRight = [Fade(1-r/tableCols), Fade(1-c/tableCols)];
-                    const distanceVectorBottomLeft = [Fade(1-r/tableCols), Fade(c/tableCols)];
-                    const dotA = DotProduct(gridGradientVectorTopLeft,distanceVectorTopLeft);
-                    const dotB = DotProduct(gridGradientVectorTopRight,distanceVectorTopRight);
-                    const dotC = DotProduct(gridGradientVectorBottomRight,distanceVectorBottomRight);
-                    const dotD = DotProduct(gridGradientVectorBottomLeft,distanceVectorBottomLeft);
-                    const AB = Fade(dotA + Fade(c/tableCols) * (dotB - dotA));
-                    const CD = Fade(dotC + Fade(c/tableCols) * (dotD - dotC));
-                    const value = AB + Fade(r/tableRows) * (CD - AB);
-*/
 
-function DotProduct(vec1, vec2) {
-    return vec1[0]*vec2[0] + vec1[1]*vec2[1];
-}
-
-function Clamp(number, min, max) {
-    return Math.max(min, Math.min(number, max));
-}
-
-function Fade(t){
-    return t*t*t*(6*t*t-(15*t)+10); //6t^5 -15t^4+10t^3
-}
