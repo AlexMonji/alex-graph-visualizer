@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Graph Search Visualizer by Alex Monji</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="viewport" content="width=520, initial-scale=1.0">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <meta name="description" content="Frontend Practice Through Graph Search Visualization">
     <meta name="author" content="Alex Monji">
     <style>
@@ -14,6 +14,23 @@
         --path-bg-animated: rgb(255, 174, 0);
         --path-bg: rgb(255, 94, 0);
         --weight-color: rgb(13, 224, 119);
+      }
+
+      /* scroll bar */
+      ::-webkit-scrollbar {
+          width: 12px;
+      }
+      
+      ::-webkit-scrollbar-track {
+          background-color: #f1f1f1f1;
+      }
+      
+      ::-webkit-scrollbar-thumb {
+          background-color: #888;
+      }
+
+      ::-webkit-scrollbar-thumb:hover {
+          -webkit-box-shadow: inset 0 0 12px rgba(0,0,0,1); 
       }
 
       * {
@@ -40,7 +57,7 @@
 
       main {
         height: calc(100% - 80px);
-        min-height: 700px;
+
         width: 100vw;
         display: flex;
       }
@@ -58,10 +75,17 @@
       #algorithms {
         position: relative;
         border: 1px solid rgb(95, 152, 218);
-        height: 70%;
+        height: calc(100% - 180px);
         width: 100%;
         margin-bottom: 10px;
         padding: 0 5px;
+      }
+
+      #drop-downs {
+        height: 340px;
+        border: 1px solid rgb(95, 152, 218);
+        overflow-y: auto;
+        margin-bottom: 10px;
       }
 
       #algorithms button {
@@ -72,8 +96,9 @@
 
       #legend {
         border: 1px solid rgb(95, 152, 218);
-        height: 30%;
+        height: 180px;
         width: 100%;
+        overflow-y: auto;
       }
 
       .legend-item {
@@ -170,10 +195,8 @@
       }
 
       summary {
-        justify-content: space-around;
         padding-left: 10px;
         padding-right: 10px;
-
         min-width: 80px;
         height: 40px;
         border-radius: 3px;
@@ -183,6 +206,7 @@
         background-color:#4184ff;
         box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
         display: flex;
+        justify-content: center;
         align-items: center;
         cursor: pointer;
         user-select: none;
@@ -235,11 +259,10 @@
       .toggled {
         background-color:rgb(7, 196, 209);
       }
-
       output {
         color: white;
-        width: 80px;
         text-align: left;
+        width: 50px;
         margin-left: 5px;
       }
 
@@ -263,13 +286,52 @@
         cursor: not-allowed;
       }
 
-      @media only screen and (max-device-width: 520px)
+      @media only screen and (max-device-width: 1380px)
       {
         nav {
           height: 120px;
         }
         main {
           height: calc(100% - 120px);
+        }
+        #sidebar-container {
+          width: 200px;
+        }
+        #gridContainer {
+          width: calc(100vw - 200px);
+        }
+      }
+
+      @media only screen and (max-device-width: 700px)
+      {
+        nav {
+          height: 180px;
+        }
+        main {
+          height: calc(100% - 180px);
+        }
+        #sidebar-container {
+          width: 200px;
+        }
+        #gridContainer {
+          width: calc(100vw - 200px);
+        }
+      }
+
+      
+      @media only screen and (max-device-width: 400px)
+      {
+        nav {
+          height: 180px;
+        }
+        details {
+          width: 45%;
+        }
+        button {
+          width: 45%;
+        }
+        main {
+          height: calc(100% - 180px);
         }
         #sidebar-container {
           width: 200px;
@@ -290,12 +352,9 @@
         <button id="wall-button">Place Wall</button>
         <label for="wall-button" class="tooltiptext">Left click to place. <br/> Right click to delete.</label>
       </div -->
-      <button id="play-button" class="play" disabled></button>
-      <input id="animation-progress" type="range" value="0" min="0" max="0" step="1" disabled/>
-      <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>
-      <button id="reset-button">Reset</button>
-      <button id="clear-button">Clear All</button>
-      <details id="noise">
+      <button id="reset-button">Clear Search</button>
+      <button id="clear-button">Clear Walls</button>
+      <details id="weight">
         <summary>Generate Weights</summary>
         <div class="details-body">
           <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
@@ -306,12 +365,18 @@
       <details id="maze">
         <summary>Generate Maze</summary>
         <div class="details-body">
-          <option value="random" class="noDrag" selected tabindex="4">Random</option>
-          <option value="prim" class="noDrag" selected tabindex="1">Modified Prim's</option>
-          <option value="sparse" class="noDrag" selected tabindex="2">Sparse</option>
-          <option value="very_sparse" class="noDrag" selected tabindex="3">Very Sparse</option>
+          <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
+          <option value="random" class="noDrag" selected tabindex="2">Random</option>
+          <option value="prim" class="noDrag" selected tabindex="3">Modified Prim's</option>
+          <option value="sparse" class="noDrag" selected tabindex="4">Sparse</option>
+          <option value="very_sparse" class="noDrag" selected tabindex="5">Very Sparse</option>
         </div>
       </details>
+      <div id="play-controls">
+        <button id="play-button" class="play" disabled></button>
+        <input id="animation-progress" type="range" value="0" min="0" max="0" step="1" disabled/>
+        <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>
+      </div>
       <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
@@ -361,6 +426,10 @@
             <div class="node" isWall></div>
             <label>Wall - Right click to delete</label>
           </div>
+          <div class="legend-item">
+            <div class="node cost-6"></div>
+            <label>Weighted Node</label>
+          </div>
         </section>
       </div>
       <div id="gridContainer" class="noDrag">
@@ -371,7 +440,15 @@
       </div>
     </main>
     <script>
-
+     const w =  window.innerWidth && document.documentElement.clientWidth ? 
+      Math.min(window.innerWidth, document.documentElement.clientWidth) : 
+      window.innerWidth || 
+      document.documentElement.clientWidth || 
+      document.getElementsByTagName('body')[0].clientWidth;
+      if (w < 400) {
+        document.querySelector("#maze summary").textContent = "Maze"
+        document.querySelector("#weight summary").textContent = "Weights"
+      }
     </script>
   </body>
 </html>

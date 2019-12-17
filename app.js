@@ -50,7 +50,6 @@ class StateMachine {
         
         if (this.state != APPSTATE[state.name]) this.prevState = this.state; // don't set prevState if next state is the same as current
         this.state = APPSTATE[state.name];
-        console.log(this.state.name);
     }
 
     handleMouseState(evt) {
@@ -385,8 +384,8 @@ window.addEventListener("DOMContentLoaded", function() {
     animationCounter = document.getElementById("animation-index");
     animationCounterMax = document.getElementById("animation-index-max");
 
-    const generateNoiseSelect = document.querySelector("#noise .details-body");
-    [...generateNoiseSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateNoise(evt.target.value));
+    const generateWeightSelect = document.querySelector("#weight .details-body");
+    [...generateWeightSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateWeight(evt.target.value));
     const generateMazeSelect = document.querySelector("#maze .details-body");
     [...generateMazeSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateMaze(evt.target.value));
 });
@@ -687,10 +686,10 @@ function TogglePlayButton(toggle) {
     } 
 }
 
-function GenerateNoise(noiseAlgorithm) {
+function GenerateWeight(weightAlgorithm) {
     const algorithms = {
-        random: GenerateRandomNoise,
-        perlin: GeneratePerlinNoise,
+        random: GenerateRandomWeight,
+        perlin: GeneratePerlinWeight,
     }
 
     // clear weights
@@ -701,12 +700,12 @@ function GenerateNoise(noiseAlgorithm) {
     }))
 
 
-    if(noiseAlgorithm != "clear") algorithms[noiseAlgorithm](); // run algorithm
+    if(weightAlgorithm != "clear") algorithms[weightAlgorithm](); // run algorithm
     stateMachine.transition(APPSTATE.PAUSE);
     InstantAnimate(); // finish animation
 }
 
-function GenerateRandomNoise() {
+function GenerateRandomWeight() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.cost = parseInt(Math.random()*10);
         node.DOMNode.classList.add(`cost-${node.cost}`);
@@ -714,7 +713,7 @@ function GenerateRandomNoise() {
     }))
 }
 
-function GeneratePerlinNoise() {
+function GeneratePerlinWeight() {
     const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
     const rows = nodes.length;
     const cols = nodes[0].length;
@@ -783,7 +782,7 @@ function GenerateMaze(mazeAlgorithm) {
         node.DOMNode.setPath(false);
     }));
 
-    algorithms[mazeAlgorithm]();
+    if (mazeAlgorithm != "clear") algorithms[mazeAlgorithm]();
     InstantAnimate();
     if (currAnimation) {
         stateMachine.transition(APPSTATE.PAUSE);

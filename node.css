@@ -17,10 +17,9 @@
     overflow: hidden;
     /* transition: .15s; */
     animation-delay: 0s;
-    animation-duration: .5s; 
+    animation-duration: .3s; 
     animation-iteration-count: 1;
     animation-play-state: running;
-    font-weight: bold;
 }
 
 .node:hover {
@@ -114,22 +113,46 @@
 .visited.animate.left:not([weighted]) {
     animation-name: visitedLeft;
 }
+.visited.animate.below[weighted] {
+    animation-name: visitedBelowSimple;
+}
+.visited.animate.above[weighted] {
+    animation-name: visitedAboveSimple;
+}
+.visited.animate.right[weighted] {
+    animation-name: visitedRightSimple;
+}
+.visited.animate.left[weighted] {
+    animation-name: visitedLeftSimple;
+}
 
 .path {
     background-color: var(--path-bg);
     background-repeat: no-repeat;
 }
-.path.animate.below {
+.path.animate.below:not([weighted]) {
     animation-name: pathBelow;
 }
-.path.animate.above {
+.path.animate.above:not([weighted]) {
     animation-name: pathAbove;
 }
-.path.animate.right {
+.path.animate.right:not([weighted]) {
     animation-name: pathRight;
 }
-.path.animate.left {
+.path.animate.left:not([weighted]) {
     animation-name: pathLeft;
+}
+.path.animate.below[weighted] {
+    animation-name: pathBelowSimple;
+}
+.path.animate.above[weighted] {
+    animation-name: pathAboveSimple;
+}
+.path.animate.right[weighted] {
+    animation-name: pathRightSimple;
+}
+.path.animate.left[weighted] {
+    animation-name: pathLeftSimple;
 }
 
 .path.above {
@@ -266,8 +289,43 @@
     }
 }
 
-/* path */
+@keyframes visitedBelowSimple {
+    50% {
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
 
+@keyframes visitedAboveSimple {
+    50% {
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+@keyframes visitedRightSimple {
+    50% {
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+@keyframes visitedLeftSimple {
+    50% {
+        box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, .2);
+    }
+    100% {
+        background-color: var(--visited-bg-animated);
+    }
+}
+
+/* path */
 @keyframes pathAbove {
     0% {
         transform: translateY(-24px);
@@ -317,5 +375,31 @@
     60% {
         background-color: var(--path-bg-animated);
         transform: scale(1.2);
+    }
+}
+
+
+@keyframes pathAboveSimple {
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+}
+
+@keyframes pathRightSimple {
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+}
+
+@keyframes pathLeftSimple {
+    60% {
+        background-color: var(--path-bg-animated);
+    }
+}
+
+@keyframes pathBelowSimple {
+    60% {
+        background-color: var(--path-bg-animated);
+
     }
 }
