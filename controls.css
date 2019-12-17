@@ -63,6 +63,8 @@
 #animation-progress {
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
     width: 50%; /* Specific width is required for Firefox. */
+    min-width: 200px;
+    flex-shrink: 1;
     background: #fff; /* Otherwise white in Chrome */
     outline: none;
     cursor: pointer;

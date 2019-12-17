@@ -239,49 +239,32 @@ class Node {
         this.from = null; // the neighbor that visited this node 
     }
 
-    getNeighbors() {
+    getAllNeighbors() {
         const {row, col} = this;
-        const nodes = this.nodes;
         const neighbors = [];
         const colLength = nodes[0].length;
         const rowLength = nodes.length
         let neighbor = null;
         if (col+1 < colLength) {
             neighbor = nodes[row][col+1];
-            if (!neighbor.visited && !neighbor.isWall) {
-                neighbor.from = this;
-                neighbor.direction = "left";
-                neighbors.push( neighbor );
-            }
+            neighbors.push( {neighbor, direction: "left"} );
         }
         if (row+1 < rowLength) {
             neighbor = nodes[row+1][col];
-            if (!neighbor.visited && !neighbor.isWall) {
-                neighbor.from = this;
-                neighbor.direction = "above";
-                neighbors.push( neighbor );
-            }
+            neighbors.push( {neighbor, direction: "above"} );
         }
         if (col-1 >= 0) {
             neighbor = nodes[row][col-1];
-            if (!neighbor.visited && !neighbor.isWall) {
-                neighbor.from = this;
-                neighbor.direction = "right";
-                neighbors.push( neighbor );
-            }
+            neighbors.push( {neighbor, direction: "right"} );
         }
         if (row-1 >= 0) {
             neighbor = nodes[row-1][col];
-            if (!neighbor.visited && !neighbor.isWall) {
-                neighbor.from = this;
-                neighbor.direction = "below";
-                neighbors.push( neighbor );
-            }
+            neighbors.push( {neighbor, direction: "below"} );
         }
         return neighbors;
     }
 
-    getAllNeighbors() {
+    getNeighbors() {
         const {row, col} = this;
         const neighbors = [];
         const colLength = nodes[0].length;
@@ -313,6 +296,30 @@ class Node {
         }
         return neighbors;
     }
+
+    getFrontierNeighbors(state) {
+        // get all frontier neighbors, nodes that are 2 or less moves from the source node
+        const frontierNeighbors = [];
+        for(let row = -2; row < 3; row++) {
+            for(let col = -2; col < 3; col++) {
+                const rowAbs = Math.abs(row);
+                const colAbs = Math.abs(col);
+
+                if (!(rowAbs == 0 && colAbs == 2) && !(rowAbs == 2 && colAbs == 0)) continue;
+                const actualRow = this.row+row;
+                const actualCol = this.col+col;
+                if ((actualRow >= 1 && actualRow < nodes.length-1) && (actualCol >= 1 && actualCol < nodes[0].length-1)) {
+                    const node = nodes[actualRow][actualCol];
+                    if (node.state == state) {
+                        frontierNeighbors.push(node);
+                    }
+                }
+            }
+        }
+        return frontierNeighbors;
+    }
+
+
 
     setVisited(value, animate = true) {
         this.DOMNode.setVisited(value, this.direction, animate);
@@ -379,8 +386,10 @@ window.addEventListener("DOMContentLoaded", function() {
     animationCounter = document.getElementById("animation-index");
     animationCounterMax = document.getElementById("animation-index-max");
 
-    const generateNoiseSelect = document.getElementById("details-body");
+    const generateNoiseSelect = document.querySelector("#noise .details-body");
     [...generateNoiseSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateNoise(evt.target.value));
+    const generateMazeSelect = document.querySelector("#maze .details-body");
+    [...generateMazeSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateMaze(evt.target.value));
 });
 
 // Node Logic Handlers
@@ -759,3 +768,112 @@ function GeneratePerlinNoise() {
     }
 }
 
+function GenerateMaze(mazeAlgorithm) {
+    const algorithms = {
+        random: GenerateRandomMaze,
+        prim: GeneratePrimMaze,
+        sparse: () => GenerateSparseMaze(2),
+        very_sparse: () => GenerateSparseMaze(1)
+    }
+    Clear();
+    algorithms[mazeAlgorithm]();
+}
+
+// reference https://stackoverflow.com/questions/29739751/implementing-a-randomly-generated-maze-using-prims-algorithm
+function GeneratePrimMaze(mazeAlgorithm) {
+    // all nodes begin exist in 1 of 2 states, blocked or passage, all begin as blocked except for start
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        node.state = "blocked";
+    }))
+    startNode.state = "passage";
+    startNode.visited = true;
+    let frontierNodes = startNode.getFrontierNeighbors("blocked"); // get all blocked nodes at distance 2 from start
+
+    while (frontierNodes.length > 0) {
+        const frontierNodeIndex = Math.floor(Math.random()*frontierNodes.length)
+        const frontierNode = frontierNodes[frontierNodeIndex]; // pick random frontier node from list of frontier nodes
+
+        const neighbors = frontierNode.getFrontierNeighbors("passage"); // get all nodes at distance 2 in state passage
+        const neighbor = neighbors[Math.floor(Math.random()*neighbors.length)]; // pick one at random to connect with
+        
+        const connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
+        connectorNode.state = "passage";
+        frontierNode.state = "passage";
+    
+        frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
+         // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
+        frontierNode.getFrontierNeighbors("blocked").forEach(node => {
+            if (!node.visited) { 
+                frontierNodes.push(node); 
+                node.visited = true;
+            }
+        });
+
+    }
+
+    // actually set the walls
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        if (node.state == "blocked") node.setIsWall(true);
+    }))
+    endNode.setIsWall(false);
+}
+
+// same as above, but ignores if frontier node has already been visited and runs twice to get some interesting walls and pits
+function GenerateSparseMaze(runs) {
+    for (let x = 0; x < runs; x++) {
+        nodes.forEach(nodeRow => nodeRow.forEach(node => {
+            node.state = "blocked";
+        }))
+
+        startNode.state = "passage";
+        startNode.visited = true;
+        let frontierNodes = startNode.getFrontierNeighbors("blocked"); // get all blocked nodes at distance 2 from start
+
+        while (frontierNodes.length > 0) {
+            const frontierNodeIndex = Math.floor(Math.random()*frontierNodes.length)
+            const frontierNode = frontierNodes[frontierNodeIndex]; // pick random frontier node from list of frontier nodes
+
+            const neighbors = frontierNode.getFrontierNeighbors("passage"); // get all nodes at distance 2 in state passage
+            const neighbor = neighbors[Math.floor(Math.random()*neighbors.length)]; // pick one at random to connect with
+            
+            const connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
+            connectorNode.state = "passage";
+            frontierNode.state = "passage";
+        
+            frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
+            frontierNodes = frontierNodes.concat(frontierNode.getFrontierNeighbors("blocked")); // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
+        }
+
+        // set walls
+        nodes.forEach(nodeRow => nodeRow.forEach(node => {
+            if (node.state == "blocked") node.setIsWall(true);
+        }))
+    }
+
+    // get rid of islands
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        if (node.isWall) {
+            let island = true;
+            node.getAllNeighbors().forEach(({neighbor, type}) => {
+                if (neighbor.isWall) {
+                    island = false;
+                }
+            })
+            if (island) { 
+                node.setIsWall(false);
+            }
+        }
+    }))
+
+    endNode.setIsWall(false);
+}
+
+function GenerateRandomMaze() {
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        if (node != startNode && node != endNode) {
+            if (Math.random() > .7) {
+                node.setIsWall(true)      
+            }
+        }
+    })) 
+}

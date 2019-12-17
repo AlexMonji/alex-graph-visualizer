@@ -7,7 +7,7 @@ export function BFS(startNode, endNode) {
         if (!node.visited) {     
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
-            node.getAllNeighbors().forEach(({neighbor, direction}) => {
+            node.getNeighbors().forEach(({neighbor, direction}) => {
                 if (!neighbor.visited) {
                     neighbor.from = node;
                     neighbor.direction = direction;
@@ -28,7 +28,7 @@ export function DFS(startNode, endNode) {
         if (!node.visited) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
-            node.getAllNeighbors().forEach(({neighbor, direction}) => {
+            node.getNeighbors().forEach(({neighbor, direction}) => {
                 if (!neighbor.visited) {
                     neighbor.from = node;
                     neighbor.direction = direction;
@@ -52,7 +52,7 @@ export function Dijkstra(startNode, endNode, nodes) {
         if (!node.visited) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
-            node.getAllNeighbors().forEach(({neighbor, direction}) => {
+            node.getNeighbors().forEach(({neighbor, direction}) => {
                 // first time seeing neighbor, add it to the set
                 if (neighbor.weight == Number.POSITIVE_INFINITY) {
                     neighbor.weight = node.weight + neighbor.cost; 
@@ -90,7 +90,7 @@ export function AStar(startNode, endNode, nodes) {
         if (!node.visited) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
-            node.getAllNeighbors().forEach(({neighbor, direction}) => {
+            node.getNeighbors().forEach(({neighbor, direction}) => {
                 // first time seeing neighbor, add it to the set
                 if (!neighbor.visited) {
                     if (neighbor.gCost == Number.POSITIVE_INFINITY) {

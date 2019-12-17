@@ -2,8 +2,8 @@
 <html lang="en">
   <head>
     <meta charset="utf-8">
-    <title>Alex Monji Pathfinder Visualization</title>
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Graph Search Visualizer by Alex Monji</title>
+    <meta name="viewport" content="width=520, initial-scale=1.0">
     <meta name="description" content="Frontend Practice Through Pathfinding Visualization">
     <meta name="author" content="Alex Monji">
     <style>
@@ -31,7 +31,7 @@
         justify-content: center;
         align-items: center;
         flex-wrap: wrap;
-        width: 100%;
+        width: 100vw;
         min-height: 80px;
         background-color: #2b4b86;
         padding: 5px;
@@ -39,6 +39,7 @@
 
       main {
         height: calc(100% - 80px);
+        width: 100vw;
         display: flex;
       }
 
@@ -96,7 +97,7 @@
         display: flex;
         justify-content: center;
         align-items: center;
-        width: 100%;
+        width: calc(100vw - 300px);
         height: 100%;
         box-sizing: border-box;
         padding: 10px;
@@ -112,17 +113,22 @@
       /* =================== CONTROLS =================== */
       .tooltiptext {
         font-family: sans-serif;
-        margin-top: 5px;
         display: block;
         visibility: hidden;
-        width: 160px;
+        width: 200px;
         background-color: rgba(0, 0, 0, 0.750);
         color: #fff;
         text-align: center;
-        padding: 5px 0;
+        padding: 10px;
         border-radius: 6px;
+        right: -208px;
+        top: 0;
         position: absolute;
         z-index: 1;
+      }
+
+      .tooltip {
+        position: relative;
       }
 
       .tooltip:hover .tooltiptext {
@@ -136,12 +142,11 @@
         height:0;
         position:absolute;
         border-top: 8px solid transparent;
-        border-bottom: 8px solid rgba(0, 0, 0, 0.750);
-        border-right:8px solid transparent;
+        border-bottom: 8px solid transparent;
+        border-right:8px solid rgba(0, 0, 0, 0.750);
         border-left: 8px solid transparent;
-        left: 10px;
-        top: -8px;
-        margin-top: -8px;
+        margin-left: -24px;
+        top: 8px;
       }
       
       button {
@@ -178,13 +183,14 @@
         display: flex;
         align-items: center;
         cursor: pointer;
+        user-select: none;
       }
 
       details {
         position: relative;
       }
 
-      #details-body {
+      .details-body {
         z-index: 10;
         border-radius: 5px;
         position: absolute;
@@ -195,17 +201,17 @@
         box-shadow: 2px 2px 4px 2px rgba(0, 0, 0, 0.2);
       }
 
-      #details-body option {
+      .details-body option {
         padding: 5px 5px;
         font-size: 20px;
         cursor: pointer;
       }
 
-      #details-body option:hover {
+      .details-body option:hover {
         background-color: #5892ff;
       }
 
-      #details-body option:focus {
+      .details-body option:focus {
         background-color: #5892ff;
       }
 
@@ -249,6 +255,22 @@
         cursor: not-allowed;
       }
 
+      @media only screen and (max-device-width: 520px)
+      {
+        nav {
+          height: 120px;
+        }
+        main {
+          height: calc(100% - 120px);
+        }
+        #sidebar-container {
+          width: 200px;
+        }
+        #gridContainer {
+          width: calc(100vw - 200px);
+        }
+      }
+
     </style>
     <link rel="stylesheet" type="text/css" href="controls.css">
     <link rel="stylesheet" type="text/css" href="node.css">
@@ -265,35 +287,56 @@
       <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>
       <button id="reset-button">Reset</button>
       <button id="clear-button">Clear All</button>
-      <details>
+      <details id="noise">
         <summary>Generate Noise</summary>
-        <div id="details-body">
+        <div class="details-body">
           <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
           <option value="random" class="noDrag" tabindex="2">Random Noise</option>
           <option value="perlin" class="noDrag" tabindex="3">Perlin Noise</option>
         </div>
-    </details>
+      </details>
+      <details id="maze">
+        <summary>Generate Maze</summary>
+        <div class="details-body">
+          <option value="random" class="noDrag" selected tabindex="4">Random Maze</option>
+          <option value="prim" class="noDrag" selected tabindex="1">Modified Prim's</option>
+          <option value="sparse" class="noDrag" selected tabindex="2">Sparse Maze</option>
+          <option value="very_sparse" class="noDrag" selected tabindex="3">Very Sparse Maze</option>
+        </div>
+      </details>
       <!-- <div class="slider-container">
         <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
         <div class="slider-labels">Grid Size</div>
       </div> -->
-      <div class="slider-container">
+      <!--div class="slider-container">
         <div class="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div>
         <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
         <div class="slider-labels">Animation Speed</div>
-      </div>
+      </div-->
     </nav>
     <main>
       <div id="sidebar-container">
         <section id="algorithms">
           <h1 class="section-title">Unweighted Algorithms</h1>
-          <button id="algorithm-BFS">BFS</button>
-          <button id="algorithm-DFS">DFS</button>
+          <div class="tooltip">
+            <button id="algorithm-BFS">BFS</button>
+            <label class="tooltiptext">Breadth First Search - Guarantees shortest path for unweighted graphs. Searches layer by layer from the source.</label>
+          </div>
+          <div class="tooltip">
+            <button id="algorithm-DFS">DFS</button>
+            <label class="tooltiptext">Depth First Search - Does not guarantee shortest path. Searches as far down as it can go.</label>
+          </div>
           <br/>
           <h1 class="section-title">Weighted Algorithms</h1>
-          <button id="algorithm-Dijkstra">Dijkstra</button>
-          <button id="algorithm-A*">A*</button>
+          <div class="tooltip">
+            <button id="algorithm-Dijkstra">Dijkstra</button>
+            <label class="tooltiptext">Dijkstra's Algorithm - Guarantees shortest path. Visits the least expensive node each step.</label>
+          </div>
+          <div class="tooltip">
+            <button id="algorithm-A*">A*</button>
+            <label class="tooltiptext">A* - Guarantees shortest path. Uses a heuristic to bias search towards target.</label>
+          </div>
           <output style="text-align: center; display: inline-block; color: black; width: 100%; margin-top: 10px;">Cost of path:&nbsp;<span id="cost-of-path">0</span></output>
         </section>
         <section id="legend">

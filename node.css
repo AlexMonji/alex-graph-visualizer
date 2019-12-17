@@ -148,6 +148,37 @@
     background-size: 24px 24px;
 }
 
+.path.cost-1 {
+    opacity: .64;
+}
+.path.cost-2 {
+    opacity: .68;
+}
+.path.cost-3 {
+    opacity: .72;
+}
+.path.cost-4 {
+    opacity: .76;
+}
+.path.cost-5 {
+    opacity: .80;
+}
+.path.cost-6 {
+    opacity: .84;
+}
+.path.cost-7 {
+    opacity: .88;
+}
+.path.cost-8 {
+    opacity: .92;
+}
+.path.cost-9 {
+    opacity: 96;
+}
+.path.cost-10 {
+    opacity: 1;
+}
+
 .node[isStart] {
     background-color:rgb(64, 255, 89);
     background-image: url('/svg/home-24px.svg');
