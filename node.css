@@ -181,7 +181,7 @@
 }
 
 .node[isStart] {
-    background-color:rgb(64, 255, 89);
+    background-color:rgb(255, 230, 0);
     background-image: url('/svg/home-24px.svg');
     background-size: 24px 24px;
     background-repeat: no-repeat;
@@ -190,7 +190,7 @@
 }
 
 .node[isEnd] {
-    background-color:rgb(255, 62, 56);
+    background-color:rgb(255, 0, 0);
     background-image: url('/svg/flag-24px.svg');
     background-size: 23px 23px;
     background-repeat: no-repeat;
