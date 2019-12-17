@@ -700,8 +700,8 @@ function GenerateNoise(noiseAlgorithm) {
         node.DOMNode.removeAttribute("weighted");
     }))
 
-    if(noiseAlgorithm == "clear") return;
-    algorithms[noiseAlgorithm](); // run algorithm
+
+    if(noiseAlgorithm != "clear") algorithms[noiseAlgorithm](); // run algorithm
     stateMachine.transition(APPSTATE.PAUSE);
     InstantAnimate(); // finish animation
 }
@@ -775,8 +775,21 @@ function GenerateMaze(mazeAlgorithm) {
         sparse: () => GenerateSparseMaze(2),
         very_sparse: () => GenerateSparseMaze(1)
     }
-    Clear();
+    nodes.forEach(nodeRow => nodeRow.forEach(node => {
+        node.setIsWall(false);
+        node.visited = false;
+        node.from = null;
+        node.DOMNode.setVisited(false);
+        node.DOMNode.setPath(false);
+    }));
+
     algorithms[mazeAlgorithm]();
+    InstantAnimate();
+    if (currAnimation) {
+        stateMachine.transition(APPSTATE.PAUSE);
+    } else {
+        stateMachine.transition(APPSTATE.IDLE);
+    }
 }
 
 // reference https://stackoverflow.com/questions/29739751/implementing-a-randomly-generated-maze-using-prims-algorithm

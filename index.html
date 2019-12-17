@@ -40,6 +40,7 @@
 
       main {
         height: calc(100% - 80px);
+        min-height: 700px;
         width: 100vw;
         display: flex;
       }
@@ -336,7 +337,7 @@
           </div>
           <div class="tooltip">
             <button id="algorithm-A*">A*</button>
-            <label class="tooltiptext">A* - Guarantees shortest path. Uses a heuristic to bias search towards target.</label>
+            <label class="tooltiptext">A* - Guarantees shortest path. Uses a heuristic (node distance from target) to bias search towards target.</label>
           </div>
           <output style="text-align: center; display: inline-block; color: black; width: 100%; margin-top: 10px;">Cost of path:&nbsp;<span id="cost-of-path">0</span></output>
         </section>

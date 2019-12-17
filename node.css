@@ -117,6 +117,7 @@
 
 .path {
     background-color: var(--path-bg);
+    background-repeat: no-repeat;
 }
 .path.animate.below {
     animation-name: pathBelow;
@@ -183,6 +184,7 @@
     background-color:rgb(64, 255, 89);
     background-image: url('/svg/home-24px.svg');
     background-size: 24px 24px;
+    background-repeat: no-repeat;
     cursor: pointer;
     opacity: 1;
 }
@@ -191,6 +193,7 @@
     background-color:rgb(255, 62, 56);
     background-image: url('/svg/flag-24px.svg');
     background-size: 23px 23px;
+    background-repeat: no-repeat;
     cursor: pointer;
     opacity: 1;
 }
