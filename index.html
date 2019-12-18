@@ -77,10 +77,11 @@
       #algorithms {
         position: relative;
         border: 1px solid rgb(95, 152, 218);
-        height: calc(100% - 180px);
+        flex-grow: 1;
         width: 100%;
         margin-bottom: 10px;
         padding: 0 5px;
+        min-height: 350px;
       }
 
       #drop-downs {
@@ -97,8 +98,9 @@
       }
 
       #legend {
+        flex-grow: 0;
         border: 1px solid rgb(95, 152, 218);
-        min-height: 180px;
+        min-height: 200px;
         width: 100%;
         overflow-y: auto;
       }
@@ -406,11 +408,11 @@
           </div>
           <div class="legend-item">
             <div class="node" isWall></div>
-            <label>Wall - Right click to delete</label>
+            <label>Wall - Hold left mouse to place<br/> Hold right mouse to delete</label>
           </div>
           <div class="legend-item">
-            <div class="node cost-6"></div>
-            <label>Weighted Node</label>
+            <div class="node cost-6" style="flex-shrink: 0"></div>
+            <label>Weighted Node - Weights range from 1 to 10 inclusive</label>
           </div>
         </section>
       </div>
