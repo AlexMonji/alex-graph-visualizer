@@ -535,7 +535,9 @@ function handleAnimationProgress(value) {
     else if (animationIndex == value+1) {
         animationIndex = animationIndex - 1; // need to shift by 1 since array is 0 indexed
         const {node, type} = animationQueue[animationIndex];
+        node.clearAnimate();
         type == "visit" ? node.setVisited(false) : node.setPath(false);
+
     }
 
     // if jumping to a point in the animation, go over entire queue to be safe since repaint is async
