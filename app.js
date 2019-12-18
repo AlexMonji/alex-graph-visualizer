@@ -310,7 +310,6 @@ class Node {
 
                     const node = nodes[actualRow][actualCol];
                     if (node.state == state) {
-                        console.log(this, actualRow, actualCol, state);
                         frontierNeighbors.push(node);
                     }
                 } else if (state == "blocked") {
@@ -318,7 +317,6 @@ class Node {
                     fakeNode.state = "blocked";
                     fakeNode.isFake = true;
                     if (fakeNode.state == state) {
-                        console.log(this, actualRow, actualCol, state);
                         frontierNeighbors.push(fakeNode);
                     }
                 }
