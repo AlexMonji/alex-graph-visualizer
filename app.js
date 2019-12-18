@@ -179,7 +179,7 @@ function GenerateGrid() {
     // get grid dimensions
     const nodes = [];
     const grid = document.getElementById("grid");
-    const {width, height} = grid.getBoundingClientRect();
+    let {width, height} = grid.getBoundingClientRect();
     const nodeSize = 24;
 
     // // clear children
@@ -189,7 +189,7 @@ function GenerateGrid() {
 
     // make rows and cols odd in number
     const rows = Math.floor(height/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(height/nodeSize)-1;
-    const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(width/nodeSize)-1;
+    const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(width/nodeSize) : Math.floor(width/nodeSize)-1;
 
     // generate nodes and DOM for nodes
     for (let row = 0; row < rows; row++) {
@@ -306,10 +306,20 @@ class Node {
                 if (!(rowAbs == 0 && colAbs == 2) && !(rowAbs == 2 && colAbs == 0)) continue;
                 const actualRow = this.row+row;
                 const actualCol = this.col+col;
-                if ((actualRow >= 1 && actualRow < nodes.length-1) && (actualCol >= 1 && actualCol < nodes[0].length-1)) {
+                if ((actualRow >= 0 && actualRow < nodes.length) && (actualCol >= 0 && actualCol < nodes[0].length)) {
+
                     const node = nodes[actualRow][actualCol];
                     if (node.state == state) {
+                        console.log(this, actualRow, actualCol, state);
                         frontierNeighbors.push(node);
+                    }
+                } else if (state == "blocked") {
+                    const fakeNode = new Node(actualRow, actualCol);   
+                    fakeNode.state = "blocked";
+                    fakeNode.isFake = true;
+                    if (fakeNode.state == state) {
+                        console.log(this, actualRow, actualCol, state);
+                        frontierNeighbors.push(fakeNode);
                     }
                 }
             }
@@ -348,8 +358,18 @@ class Node {
 // main
 window.addEventListener("DOMContentLoaded", function() {
 
+    const w =  window.innerWidth && document.documentElement.clientWidth ? 
+    Math.min(window.innerWidth, document.documentElement.clientWidth) : 
+    window.innerWidth || 
+    document.documentElement.clientWidth || 
+    document.getElementsByTagName('body')[0].clientWidth;
+    if (w < 500) {
+      document.querySelector("#maze summary").textContent = "Maze"
+      document.querySelector("#weight summary").textContent = "Weights"
+    }
+
     const grid = null; // remove after refactor
-    nodes = GenerateGrid();
+    nodes = GenerateGrid(w);
 
     // prevent contentmenu on node right click
     document.oncontextmenu = function(evt){
@@ -689,7 +709,7 @@ function TogglePlayButton(toggle) {
 function GenerateWeight(weightAlgorithm) {
     const algorithms = {
         random: GenerateRandomWeight,
-        perlin: GeneratePerlinWeight,
+        perlin: GeneratePerlinNoiseWeight,
     }
 
     // clear weights
@@ -713,13 +733,12 @@ function GenerateRandomWeight() {
     }))
 }
 
-function GeneratePerlinWeight() {
+function GeneratePerlinNoiseWeight() {
     const gradientVectors = [[1,1],[1.4,0],[-1,1],[0,1.4],[1,-1],[-1.4,0],[-1,-1],[0,-1.4]];
     const rows = nodes.length;
     const cols = nodes[0].length;
-    const numberTablesRow = Math.floor(Math.random()*3+2); // vary number of mini grids
-    const numberTablesCol = Math.floor(numberTablesRow*cols/rows); // try to keep mini grids square by adjusting for ratio of cols to rows
-
+    const numberTablesRow = Math.max(1, Math.floor(Math.random()*3+2)); // vary number of mini grids
+    const numberTablesCol = Math.max(1, Math.floor(numberTablesRow*cols/rows)); // try to keep mini grids square by adjusting for ratio of cols to rows
     const tableRows = parseInt(rows/numberTablesRow)+1; // rows per mini grid
     const tableCols = parseInt(cols/numberTablesCol)+1; // cols per mini grid
     // split grid into numberTablesRow * numberTablesCol many smaller grids
@@ -807,19 +826,27 @@ function GeneratePrimMaze(mazeAlgorithm) {
 
         const neighbors = frontierNode.getFrontierNeighbors("passage"); // get all nodes at distance 2 in state passage
         const neighbor = neighbors[Math.floor(Math.random()*neighbors.length)]; // pick one at random to connect with
-        
-        const connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
-        connectorNode.state = "passage";
+        console.log(frontierNode, neighbors)// frontierNode.row+((neighbor.row-frontierNode.row)/2), frontierNode.col+((neighbor.col-frontierNode.col)/2))
+        let connectorNode = null;
+        if (frontierNode.row+((neighbor.row-frontierNode.row)/2) >= 0 && frontierNode.col+((neighbor.col-frontierNode.col)/2) >= 0 && frontierNode.row+((neighbor.row-frontierNode.row)/2) < nodes.length && frontierNode.col+((neighbor.col-frontierNode.col)/2) < nodes[0].length) {
+            connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
+        } else {
+            frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
+            continue;
+        }
+        if (connectorNode) connectorNode.state = "passage";
         frontierNode.state = "passage";
     
         frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
          // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
-        frontierNode.getFrontierNeighbors("blocked").forEach(node => {
-            if (!node.visited) { 
-                frontierNodes.push(node); 
-                node.visited = true;
-            }
-        });
+         if (!frontierNode.isFake) {
+            frontierNode.getFrontierNeighbors("blocked").forEach(node => {
+                if (!node.visited) { 
+                    frontierNodes.push(node); 
+                    node.visited = true;
+                }
+            });
+        }
 
     }
 

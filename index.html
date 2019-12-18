@@ -38,10 +38,12 @@
         font-family: sans-serif;
       }
 
-      body {
-        margin: 0;
-        width: 100vw;
-        height: 100vh;
+      html, body {
+          width: 100%;
+          height: 100%;
+          margin: 0px;
+          padding: 0px;
+          overflow-x: hidden; 
       }
 
       nav {
@@ -57,7 +59,7 @@
 
       main {
         height: calc(100% - 80px);
-
+        min-height: 600px;
         width: 100vw;
         display: flex;
       }
@@ -96,7 +98,7 @@
 
       #legend {
         border: 1px solid rgb(95, 152, 218);
-        height: 180px;
+        min-height: 180px;
         width: 100%;
         overflow-y: auto;
       }
@@ -300,6 +302,9 @@
         #gridContainer {
           width: calc(100vw - 200px);
         }
+        #legend {
+          min-height: 220px;
+        }
       }
 
       @media only screen and (max-device-width: 700px)
@@ -310,34 +315,11 @@
         main {
           height: calc(100% - 180px);
         }
-        #sidebar-container {
-          width: 200px;
-        }
-        #gridContainer {
-          width: calc(100vw - 200px);
-        }
-      }
-
-      
-      @media only screen and (max-device-width: 400px)
-      {
-        nav {
-          height: 180px;
-        }
         details {
           width: 45%;
         }
         button {
           width: 45%;
-        }
-        main {
-          height: calc(100% - 180px);
-        }
-        #sidebar-container {
-          width: 200px;
-        }
-        #gridContainer {
-          width: calc(100vw - 200px);
         }
       }
 
@@ -440,15 +422,6 @@
       </div>
     </main>
     <script>
-     const w =  window.innerWidth && document.documentElement.clientWidth ? 
-      Math.min(window.innerWidth, document.documentElement.clientWidth) : 
-      window.innerWidth || 
-      document.documentElement.clientWidth || 
-      document.getElementsByTagName('body')[0].clientWidth;
-      if (w < 400) {
-        document.querySelector("#maze summary").textContent = "Maze"
-        document.querySelector("#weight summary").textContent = "Weights"
-      }
     </script>
   </body>
 </html>
