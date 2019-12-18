@@ -568,7 +568,7 @@ function handleAnimationProgress(value) {
 
 // when start or end node is updated, immediately show search result
 function InstantAnimate() {
-    if (!currAnimation) return;
+    if (!currAnimation || !currAlgorithm) return;
     // start fresh and run algorithm
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.visited = false;
