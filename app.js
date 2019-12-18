@@ -826,20 +826,26 @@ function GeneratePrimMaze(mazeAlgorithm) {
 
         const neighbors = frontierNode.getFrontierNeighbors("passage"); // get all nodes at distance 2 in state passage
         const neighbor = neighbors[Math.floor(Math.random()*neighbors.length)]; // pick one at random to connect with
-        console.log(frontierNode, neighbors)// frontierNode.row+((neighbor.row-frontierNode.row)/2), frontierNode.col+((neighbor.col-frontierNode.col)/2))
+
         let connectorNode = null;
-        if (frontierNode.row+((neighbor.row-frontierNode.row)/2) >= 0 && frontierNode.col+((neighbor.col-frontierNode.col)/2) >= 0 && frontierNode.row+((neighbor.row-frontierNode.row)/2) < nodes.length && frontierNode.col+((neighbor.col-frontierNode.col)/2) < nodes[0].length) {
-            connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
+        const connectorRow = frontierNode.row+((neighbor.row-frontierNode.row)/2);
+        const connectorCol = frontierNode.col+((neighbor.col-frontierNode.col)/2);
+
+        // if connector node is within the grid, go ahead and get it and set it to passage, otherwise just continue
+        if (connectorRow >= 0 && connectorCol >= 0 && connectorRow < nodes.length && connectorCol < nodes[0].length) {
+            connectorNode = nodes[connectorRow][connectorCol]; // get node inbetween and set to passage
         } else {
             frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
             continue;
         }
+
         if (connectorNode) connectorNode.state = "passage";
         frontierNode.state = "passage";
     
         frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
          // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
-         if (!frontierNode.isFake) {
+         // if the frontier node was a fake, then don't try to continue beyond the grid by adding more fake frontier nodes
+        if (!frontierNode.isFake) {
             frontierNode.getFrontierNeighbors("blocked").forEach(node => {
                 if (!node.visited) { 
                     frontierNodes.push(node); 
@@ -847,7 +853,6 @@ function GeneratePrimMaze(mazeAlgorithm) {
                 }
             });
         }
-
     }
 
     // actually set the walls
@@ -871,16 +876,34 @@ function GenerateSparseMaze(runs) {
         while (frontierNodes.length > 0) {
             const frontierNodeIndex = Math.floor(Math.random()*frontierNodes.length)
             const frontierNode = frontierNodes[frontierNodeIndex]; // pick random frontier node from list of frontier nodes
-
+    
             const neighbors = frontierNode.getFrontierNeighbors("passage"); // get all nodes at distance 2 in state passage
             const neighbor = neighbors[Math.floor(Math.random()*neighbors.length)]; // pick one at random to connect with
-            
-            const connectorNode = nodes[frontierNode.row+((neighbor.row-frontierNode.row)/2)][frontierNode.col+((neighbor.col-frontierNode.col)/2)]; // get node inbetween and set to passage
-            connectorNode.state = "passage";
+    
+            let connectorNode = null;
+            const connectorRow = frontierNode.row+((neighbor.row-frontierNode.row)/2);
+            const connectorCol = frontierNode.col+((neighbor.col-frontierNode.col)/2);
+    
+            // if connector node is within the grid, go ahead and get it and set it to passage, otherwise just continue
+            if (connectorRow >= 0 && connectorCol >= 0 && connectorRow < nodes.length && connectorCol < nodes[0].length) {
+                connectorNode = nodes[connectorRow][connectorCol]; // get node inbetween and set to passage
+            } else {
+                frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
+                continue;
+            }
+    
+            if (connectorNode) connectorNode.state = "passage";
             frontierNode.state = "passage";
         
             frontierNodes.splice(frontierNodeIndex, 1); // remove the frontier node we marked as passage from list
-            frontierNodes = frontierNodes.concat(frontierNode.getFrontierNeighbors("blocked")); // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
+             // append all blocked nodes (that haven't been seen before)  at distance 2 from the frontier node
+             // if the frontier node was a fake, then don't try to continue beyond the grid by adding more fake frontier nodes
+            if (!frontierNode.isFake) {
+                frontierNode.getFrontierNeighbors("blocked").forEach(node => {
+                        frontierNodes.push(node); 
+                        node.visited = true;
+                });
+            }
         }
 
         // set walls
