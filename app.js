@@ -356,18 +356,13 @@ class Node {
 // main
 window.addEventListener("DOMContentLoaded", function() {
 
-    const w =  window.innerWidth && document.documentElement.clientWidth ? 
-    Math.min(window.innerWidth, document.documentElement.clientWidth) : 
-    window.innerWidth || 
-    document.documentElement.clientWidth || 
-    document.getElementsByTagName('body')[0].clientWidth;
-    if (w < 500) {
+    // if screen is thin, change shorten text in generate buttons
+    if (window.innerWidth < 500) {
       document.querySelector("#maze summary").textContent = "Maze"
       document.querySelector("#weight summary").textContent = "Weights"
     }
 
-    const grid = null; // remove after refactor
-    nodes = GenerateGrid(w);
+    nodes = GenerateGrid();
 
     // prevent contentmenu on node right click
     document.oncontextmenu = function(evt){
@@ -375,18 +370,29 @@ window.addEventListener("DOMContentLoaded", function() {
             evt.preventDefault();
         }
     }
-    document.onmouseup = handleMouseUp;
 
     // user actions
-    // const gridSize = document.getElementById("grid-size");
-    // gridSize.onchange = (evt) => grid.handleGridSize(evt.target.value);
+    document.onmouseup = handleMouseUp;
     const playButton = document.getElementById("play-button");
-    playButton.onclick = () => handlePlay(grid);
+    playButton.onclick = () => handlePlay();
+
+    // animation progress bar
     animationProgress = document.getElementById("animation-progress");
     animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value);
-    animationProgress.oninput = (evt) => {
-        UpdateAnimationProgressBar(evt.target.value)
-    };
+    animationProgress.oninput = (evt) => UpdateAnimationProgressBar(evt.target.value);
+    animationCounter = document.getElementById("animation-index");
+    animationCounterMax = document.getElementById("animation-index-max");
+
+    // spacebar pauses and plays and decrements/increments animation progress when left and right arrow pressed
+    document.onkeypress = (evt) => {
+        if (evt.keyCode == 32 && !playButton.disabled) handlePlay();
+    }
+    document.onkeydown = (evt) => {
+        if (document.activeElement == animationProgress) return;
+        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationProgress.value) - 1);
+        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationProgress.value) + 1);
+    }
+
     const BFSButton = document.getElementById("algorithm-BFS");
     BFSButton.onclick = () => RunAlgorithm(BFS);
     const DFSButton = document.getElementById("algorithm-DFS");
@@ -399,8 +405,7 @@ window.addEventListener("DOMContentLoaded", function() {
     clearButton.onclick = () => Clear(grid);
     const resetButton = document.getElementById("reset-button");
     resetButton.onclick = () => Reset(grid);
-    animationCounter = document.getElementById("animation-index");
-    animationCounterMax = document.getElementById("animation-index-max");
+
 
     const generateWeightSelect = document.querySelector("#weight .details-body");
     [...generateWeightSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateWeight(evt.target.value));
@@ -515,6 +520,7 @@ function AnimateSearch() {
 
 // when animation progress is handled by user
 function handleAnimationProgress(value) {
+    if (value < 0 || value > animationProgress.max) return;
     animationProgress.value = value;
     UpdateAnimationProgressBar();
     
@@ -527,6 +533,7 @@ function handleAnimationProgress(value) {
 
     }
     else if (animationIndex == value+1) {
+        animationIndex = animationIndex - 1; // need to shift by 1 since array is 0 indexed
         const {node, type} = animationQueue[animationIndex];
         type == "visit" ? node.setVisited(false) : node.setPath(false);
     }
