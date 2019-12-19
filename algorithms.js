@@ -8,7 +8,7 @@ export function BFS(startNode, endNode) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
             node.getNeighbors().forEach(({neighbor, direction}) => {
-                if (!neighbor.visited) {
+                if (!neighbor.visited && !neighbor.isWall) {
                     neighbor.from = node;
                     neighbor.direction = direction;
                     queue.push(neighbor);
@@ -29,7 +29,7 @@ export function DFS(startNode, endNode) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
             node.getNeighbors().forEach(({neighbor, direction}) => {
-                if (!neighbor.visited) {
+                if (!neighbor.visited && !neighbor.isWall) {
                     neighbor.from = node;
                     neighbor.direction = direction;
                     stack.push(neighbor);
@@ -53,17 +53,19 @@ export function Dijkstra(startNode, endNode, nodes) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
             node.getNeighbors().forEach(({neighbor, direction}) => {
-                // first time seeing neighbor, add it to the set
-                if (neighbor.weight == Number.POSITIVE_INFINITY) {
-                    neighbor.weight = node.weight + neighbor.cost; 
-                    neighbor.from = node;
-                    neighbor.direction = direction;
-                    heap.push(neighbor)
-                // otherwise seen it before, update its weight and the node leading to it if the weight is better
-                } else if (node.weight + neighbor.cost < neighbor.weight) { 
-                    neighbor.from = node;
-                    neighbor.direction = direction;
-                    neighbor.weight = node.weight + neighbor.cost;
+                if (!neighbor.isWall) {
+                    // first time seeing neighbor, add it to the set
+                    if (neighbor.weight == Number.POSITIVE_INFINITY) {
+                        neighbor.weight = node.weight + neighbor.cost; 
+                        neighbor.from = node;
+                        neighbor.direction = direction;
+                        heap.push(neighbor)
+                    // otherwise seen it before, update its weight and the node leading to it if the weight is better
+                    } else if (node.weight + neighbor.cost < neighbor.weight) { 
+                        neighbor.from = node;
+                        neighbor.direction = direction;
+                        neighbor.weight = node.weight + neighbor.cost;
+                    }
                 }
             });
         }
@@ -91,23 +93,24 @@ export function AStar(startNode, endNode, nodes) {
             node.visited = true;
             animationQueue.push( {node, type: "visit"} );
             node.getNeighbors().forEach(({neighbor, direction}) => {
-                // first time seeing neighbor, add it to the set
-                if (!neighbor.visited) {
-                    if (neighbor.gCost == Number.POSITIVE_INFINITY) {
-                        neighbor.gCost = node.gCost + neighbor.cost;
-                        neighbor.fCost = neighbor.gCost + neighbor.hCost;
-                        neighbor.from = node;
-                        neighbor.direction = direction;
-                        heap.push(neighbor)
-                    // otherwise seen it before, update its weight and the node leading to it if the weight is better
-                    } else if (node.gCost + neighbor.cost + neighbor.hCost < neighbor.fCost && !neighbor.visited) {
-                        neighbor.from = node;
-                        neighbor.direction = direction;
-                        neighbor.gCost = node.gCost + neighbor.cost;
-                        neighbor.fCost = neighbor.gCost + neighbor.hCost;
+                if (!neighbor.isWall) {
+                    // first time seeing neighbor, add it to the set
+                    if (!neighbor.visited) {
+                        if (neighbor.gCost == Number.POSITIVE_INFINITY) {
+                            neighbor.gCost = node.gCost + neighbor.cost;
+                            neighbor.fCost = neighbor.gCost + neighbor.hCost;
+                            neighbor.from = node;
+                            neighbor.direction = direction;
+                            heap.push(neighbor)
+                        // otherwise seen it before, update its weight and the node leading to it if the weight is better
+                        } else if (node.gCost + neighbor.cost + neighbor.hCost < neighbor.fCost && !neighbor.visited) {
+                            neighbor.from = node;
+                            neighbor.direction = direction;
+                            neighbor.gCost = node.gCost + neighbor.cost;
+                            neighbor.fCost = neighbor.gCost + neighbor.hCost;
+                        }
                     }
                 }
-
             });
         }
     }

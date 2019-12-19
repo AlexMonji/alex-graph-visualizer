@@ -1,4 +1,4 @@
-import DOMNode from "./CustomElements/DOMNode.js"
+import Node from "./CustomElements/Node.js"
 import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
 import {DotProduct, Clamp, Fade} from "./util.js"
 
@@ -163,15 +163,15 @@ const stateMachine = new StateMachine(APPSTATE.IDLE);
 
 function SetStartNode(newStartNode, currStartNode) {
     if (newStartNode == currStartNode) return currStartNode; // if already set, don't do anything
-    if (currStartNode) currStartNode.setIsStart(false);
-    newStartNode.setIsStart(true);
+    if (currStartNode) currStartNode.isStart = false;
+    newStartNode.isStart = true;
     return newStartNode;
 }
 
 function SetEndNode(newEndNode, currEndNode) {
     if (newEndNode == currEndNode) return currEndNode; // if already set, don't do anything
-    if (currEndNode) currEndNode.setIsEnd(false);
-    newEndNode.setIsEnd(true);
+    if (currEndNode) currEndNode.isEnd = false;
+    newEndNode.isEnd = true;
     return newEndNode;
 }
 
@@ -191,7 +191,7 @@ function GenerateGrid() {
     const rows = Math.floor(height/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(height/nodeSize)-1;
     const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(width/nodeSize) : Math.floor(width/nodeSize)-1;
 
-    // generate nodes and DOM for nodes
+    // generate nodes
     for (let row = 0; row < rows; row++) {
         const nodeRow = [];
         const newDOMRow = document.createElement("tr"); // DOM grid
@@ -199,11 +199,10 @@ function GenerateGrid() {
             const newNode = new Node(row, col, nodes);
 
             // DOM Node setup
-            const newDOMNode = newNode.DOMNode;
-            newDOMNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(evt, newNode));
-            newDOMNode.addEventListener("mousedown",  (evt) => NodeMouseDown(evt, newNode));
-            newDOMNode.setAttribute('size', nodeSize);
-            newDOMRow.appendChild(newDOMNode);
+            newNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(evt, newNode));
+            newNode.addEventListener("mousedown",  (evt) => NodeMouseDown(evt, newNode));
+            //newNode.setAttribute('size', nodeSize);
+            newDOMRow.appendChild(newNode);
 
             // Internal Node
             nodeRow.push(newNode);
@@ -219,140 +218,6 @@ function GenerateGrid() {
     return nodes;
 }
 
-//Node(row, col)
-//  clearAttributes(node)
-//  getNeighbors(node)
-//  getDOMNode(node)
-class Node {
-    constructor(row, col, nodes) {
-        this.id = `${row}_${col}`
-        this.DOMNode = new DOMNode(this);
-        this.nodes = nodes;
-        this.row = row;
-        this.col = col;
-        this.isWall = false;
-        this.direction = null;
-        this.visited = false;
-        this.cost = 1; // default one, unweighted
-        this.from = null; // the neighbor that visited this node 
-    }
-
-    getAllNeighbors() {
-        const {row, col} = this;
-        const neighbors = [];
-        const colLength = nodes[0].length;
-        const rowLength = nodes.length
-        let neighbor = null;
-        if (col+1 < colLength) {
-            neighbor = nodes[row][col+1];
-            neighbors.push( {neighbor, direction: "left"} );
-        }
-        if (row+1 < rowLength) {
-            neighbor = nodes[row+1][col];
-            neighbors.push( {neighbor, direction: "above"} );
-        }
-        if (col-1 >= 0) {
-            neighbor = nodes[row][col-1];
-            neighbors.push( {neighbor, direction: "right"} );
-        }
-        if (row-1 >= 0) {
-            neighbor = nodes[row-1][col];
-            neighbors.push( {neighbor, direction: "below"} );
-        }
-        return neighbors;
-    }
-
-    getNeighbors() {
-        const {row, col} = this;
-        const neighbors = [];
-        const colLength = nodes[0].length;
-        const rowLength = nodes.length
-        let neighbor = null;
-        if (col+1 < colLength) {
-            neighbor = nodes[row][col+1];
-            if (!neighbor.isWall) {
-                neighbors.push( {neighbor, direction: "left"} );
-            }
-        }
-        if (row+1 < rowLength) {
-            neighbor = nodes[row+1][col];
-            if (!neighbor.isWall) {
-                neighbors.push( {neighbor, direction: "above"} );
-            }
-        }
-        if (col-1 >= 0) {
-            neighbor = nodes[row][col-1];
-            if (!neighbor.isWall) {
-                neighbors.push( {neighbor, direction: "right"} );
-            }
-        }
-        if (row-1 >= 0) {
-            neighbor = nodes[row-1][col];
-            if (!neighbor.isWall) {
-                neighbors.push( {neighbor, direction: "below"} );
-            }
-        }
-        return neighbors;
-    }
-
-    getFrontierNeighbors(state) {
-        // get all frontier neighbors, nodes that are 2 or less moves from the source node
-        const frontierNeighbors = [];
-        for(let row = -2; row < 3; row++) {
-            for(let col = -2; col < 3; col++) {
-                const rowAbs = Math.abs(row);
-                const colAbs = Math.abs(col);
-
-                if (!(rowAbs == 0 && colAbs == 2) && !(rowAbs == 2 && colAbs == 0)) continue;
-                const actualRow = this.row+row;
-                const actualCol = this.col+col;
-                if ((actualRow >= 0 && actualRow < nodes.length) && (actualCol >= 0 && actualCol < nodes[0].length)) {
-
-                    const node = nodes[actualRow][actualCol];
-                    if (node.state == state) {
-                        frontierNeighbors.push(node);
-                    }
-                } else if (state == "blocked") {
-                    const fakeNode = new Node(actualRow, actualCol);   
-                    fakeNode.state = "blocked";
-                    fakeNode.isFake = true;
-                    if (fakeNode.state == state) {
-                        frontierNeighbors.push(fakeNode);
-                    }
-                }
-            }
-        }
-        return frontierNeighbors;
-    }
-
-
-
-    setVisited(value, animate = true) {
-        this.DOMNode.setVisited(value, this.direction, animate);
-    }
-
-    setPath(value, animate = true) {
-        this.DOMNode.setPath(value, animate);     
-    }
-
-    setIsWall(value) {
-        this.DOMNode.isWall = value;
-        this.isWall = value;
-    }
-
-    setIsStart(value) {
-        this.DOMNode.isStart = value;
-    }
-
-    setIsEnd(value) {
-        this.DOMNode.isEnd = value;
-    }
-
-    clearAnimate() {
-        this.DOMNode.clearAnimate();
-    }
-}
-
 // main
 window.addEventListener("DOMContentLoaded", function() {
 
@@ -366,7 +231,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // prevent contentmenu on node right click
     document.oncontextmenu = function(evt){
-        if (evt.target instanceof DOMNode) {
+        if (evt.target instanceof Node) {
             evt.preventDefault();
         }
     }
@@ -668,8 +533,8 @@ function ClearAll() {
         node.setIsWall(false);
         node.visited = false;
         node.from = null;
-        node.DOMNode.setVisited(false);
-        node.DOMNode.setPath(false);
+        node.setVisited(false);
+        node.setPath(false);
     }));
 }
 
@@ -678,8 +543,8 @@ function ClearVisited() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.visited = false;
         node.from = null;
-        node.DOMNode.setVisited(false);
-        node.DOMNode.setPath(false);
+        node.setVisited(false);
+        node.setPath(false);
     }));
 }
 
@@ -721,9 +586,9 @@ function GenerateWeight(weightAlgorithm) {
 
     // clear weights
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        node.DOMNode.classList.remove(`cost-${node.cost}`);
+        node.classList.remove(`cost-${node.cost}`);
         node.cost = 1;
-        node.DOMNode.removeAttribute("weighted");
+        node.removeAttribute("weighted");
     }))
 
 
@@ -735,8 +600,8 @@ function GenerateWeight(weightAlgorithm) {
 function GenerateRandomWeight() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         node.cost = parseInt(Math.random()*10);
-        node.DOMNode.classList.add(`cost-${node.cost}`);
-        node.DOMNode.setAttribute("weighted", "weighted");
+        node.classList.add(`cost-${node.cost}`);
+        node.setAttribute("weighted", "weighted");
     }))
 }
 
@@ -785,8 +650,8 @@ function GeneratePerlinNoiseWeight() {
                     const value = AB + localYOffset * (CD - AB);
                     const nodeCost = Math.floor(Clamp(value*5+5,1, 10.99));
                     nodes[actualRow][actualCol].cost = nodeCost;
-                    nodes[actualRow][actualCol].DOMNode.classList.add(`cost-${nodeCost}`);
-                    nodes[actualRow][actualCol].DOMNode.setAttribute("weighted", "weighted");
+                    nodes[actualRow][actualCol].classList.add(`cost-${nodeCost}`);
+                    nodes[actualRow][actualCol].setAttribute("weighted", "weighted");
                 }
             }   
         }
@@ -804,8 +669,8 @@ function GenerateMaze(mazeAlgorithm) {
         node.setIsWall(false);
         node.visited = false;
         node.from = null;
-        node.DOMNode.setVisited(false);
-        node.DOMNode.setPath(false);
+        node.setVisited(false);
+        node.setPath(false);
     }));
 
     if (mazeAlgorithm != "clear") algorithms[mazeAlgorithm]();
@@ -923,7 +788,7 @@ function GenerateSparseMaze(runs) {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         if (node.isWall) {
             let island = true;
-            node.getAllNeighbors().forEach(({neighbor, type}) => {
+            node.getNeighbors().forEach(({neighbor, type}) => {
                 if (neighbor.isWall) {
                     island = false;
                 }
