@@ -235,8 +235,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // animation progress bar
     animationControls = document.querySelector("animation-controls");
-    animationControls.animationProgress.onchange = (evt) => { handleAnimationProgress(evt.target.value); }
-    animationControls.animationProgress.oninput = (evt) => { evt.preventDefault(); } // override so correct value gets passed to handleAnimationProgress
+    animationControls.animationProgress.oninput = (evt) => handleAnimationProgress(evt.target.value); 
     animationControls.playButton.onclick = () => handlePlay();
 
     // spacebar pauses and plays and decrements/increments animation progress when left and right arrow pressed
@@ -245,8 +244,8 @@ window.addEventListener("DOMContentLoaded", function() {
     }
     document.onkeydown = (evt) => {
         if (document.activeElement == animationControls.animationProgress) return;
-        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationControls.value) - 1); // left arrow, decrement animation
-        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationControls.value) + 1); // right arrow, increment animation 
+        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationControls.value) - 1, animationControls.animationPrevIndex); // left arrow, decrement animation
+        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationControls.value) + 1, animationControls.animationPrevIndex); // right arrow, increment animation 
     }
 
     // search algorithms
@@ -364,7 +363,7 @@ function RunAlgorithm(algorithm) {
 function AnimateSearch() {
     if (animationControls.value < animationQueue.length) {
         const { node, type } = animationQueue[animationControls.value++];
-        type == "visit" ? node.setVisited(true) : node.setPath(true);
+        type == "visit" ? node.setVisited(true, true) : node.setPath(true, true);
     } else {
         clearInterval(currAnimation);
         stateMachine.transition(APPSTATE.PAUSE);
@@ -373,22 +372,20 @@ function AnimateSearch() {
 
 
 // when animation progress is handled by user
-function handleAnimationProgress(value) {
+function handleAnimationProgress(value, prevIndex) {
     if (value < 0 || value > animationControls.max) return;
     stateMachine.transition(APPSTATE.PAUSE);
-    console.log(animationControls.value, value)
+
     // if single stepping with arrow keys
     if (animationControls.value == value-1) {
-
         const {node, type} = animationQueue[animationControls.value];
-        type == "visit" ? node.setVisited(true) : node.setPath(true);
-
+        type == "visit" ? node.setVisited(true, true) : node.setPath(true, true);
     }
     else if (animationControls.value == value+1) {
         animationControls.value--;
         const {node, type} = animationQueue[animationControls.value];
         node.clearAnimate();
-        type == "visit" ? node.setVisited(false) : node.setPath(false);
+        type == "visit" ? node.setVisited(false, false) : node.setPath(false, false);
 
     }
 

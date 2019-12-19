@@ -8,6 +8,7 @@ class AnimationControls extends HTMLElement {
 
         this._max = 0;
         this._value = 0;
+        this.animationPrevIndex = 0;
         this.playButton = null;
         this.animationProgress = null;
         this.animationIndex = null;
@@ -19,10 +20,10 @@ class AnimationControls extends HTMLElement {
         this.animationProgress = this.querySelector("#animation-progress");
         this.animationIndex = this.querySelector("#animation-index");
         this.animationIndexMax = this.querySelector("#animation-index-max");
-        this.animationProgress.oninput = (evt) => this._update(evt.target.value);
     }
 
     set value(value) {
+        this.animationPrevIndex = this._value;
         this._value = value;
         this._update();
     }

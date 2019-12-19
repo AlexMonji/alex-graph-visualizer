@@ -130,29 +130,17 @@
     background-color: var(--path-bg);
     background-repeat: no-repeat;
 }
-.path.animate.below:not([weighted]) {
-    animation-name: pathBelow;
+.path.animate.below {
+    animation-name: pathBelow !important;
 }
-.path.animate.above:not([weighted]) {
-    animation-name: pathAbove;
+.path.animate.above {
+    animation-name: pathAbove !important;
 }
-.path.animate.right:not([weighted]) {
-    animation-name: pathRight;
+.path.animate.right {
+    animation-name: pathRight !important;
 }
-.path.animate.left:not([weighted]) {
-    animation-name: pathLeft;
-}
-.path.animate.below[weighted] {
-    animation-name: pathBelowSimple;
-}
-.path.animate.above[weighted] {
-    animation-name: pathAboveSimple;
-}
-.path.animate.right[weighted] {
-    animation-name: pathRightSimple;
-}
-.path.animate.left[weighted] {
-    animation-name: pathLeftSimple;
+.path.animate.left {
+    animation-name: pathLeft !important;
 }
 
 .path.above {
@@ -327,12 +315,6 @@
 
 /* path */
 @keyframes pathAbove {
-    0% {
-        transform: translateY(-24px);
-    }
-    30% {
-        transform: translateY(0px);
-    }
     60% {
         background-color: var(--path-bg-animated);
         transform: scale(1.2);
@@ -340,12 +322,6 @@
 }
 
 @keyframes pathRight {
-    0% {
-        transform: translateX(24px);
-    }
-    30% {
-        transform: translateX(0px);
-    }
     60% {
         background-color: var(--path-bg-animated);
         transform: scale(1.2);
@@ -353,12 +329,6 @@
 }
 
 @keyframes pathLeft {
-    0% {
-        transform: translateX(-24px);
-    }
-    30% {
-        transform: translateX(0px);
-    }
     60% {
         background-color: var(--path-bg-animated);
         transform: scale(1.2);
@@ -366,40 +336,8 @@
 }
 
 @keyframes pathBelow {
-    0% {
-        transform: translateY(24px);
-    }
-    30% {
-        transform: translateY(0px);
-    }
     60% {
         background-color: var(--path-bg-animated);
         transform: scale(1.2);
-    }
-}
-
-
-@keyframes pathAboveSimple {
-    60% {
-        background-color: var(--path-bg-animated);
-    }
-}
-
-@keyframes pathRightSimple {
-    60% {
-        background-color: var(--path-bg-animated);
-    }
-}
-
-@keyframes pathLeftSimple {
-    60% {
-        background-color: var(--path-bg-animated);
-    }
-}
-
-@keyframes pathBelowSimple {
-    60% {
-        background-color: var(--path-bg-animated);
-
     }
 }
