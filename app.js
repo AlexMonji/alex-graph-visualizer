@@ -7,6 +7,7 @@ let animationQueue = [];
 let animationControls = null;
 let currAnimation = null;
 let currAlgorithm = null;
+let animationSpeed = 20;
 
 // nodes
 let nodes = [];
@@ -145,7 +146,7 @@ const APPSTATE = Object.freeze({
             PLAYING_ANIMATION: {
                 name: "PLAYING_ANIMATION",
                 prepareForEnter: () => {
-                    currAnimation = setInterval(AnimateSearch, 5);
+                    currAnimation = setInterval(AnimateSearch, animationSpeed);
                 }
             },
             PAUSE: {name: "PAUSE"},
@@ -234,7 +235,8 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // animation progress bar
     animationControls = document.querySelector("animation-controls");
-    animationControls.animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value); ;
+    animationControls.animationProgress.onchange = (evt) => { handleAnimationProgress(evt.target.value); }
+    animationControls.animationProgress.oninput = (evt) => { evt.preventDefault(); } // override so correct value gets passed to handleAnimationProgress
     animationControls.playButton.onclick = () => handlePlay();
 
     // spacebar pauses and plays and decrements/increments animation progress when left and right arrow pressed
@@ -243,8 +245,8 @@ window.addEventListener("DOMContentLoaded", function() {
     }
     document.onkeydown = (evt) => {
         if (document.activeElement == animationControls.animationProgress) return;
-        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationControls.value) - 1);
-        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationControls.value) + 1);
+        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationControls.value) - 1); // left arrow, decrement animation
+        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationControls.value) + 1); // right arrow, increment animation 
     }
 
     // search algorithms
@@ -354,7 +356,7 @@ function RunAlgorithm(algorithm) {
     previousPath = path;
     animationQueue = animationQueue.concat(path); 
     animationControls.max = animationQueue.length;
-    currAnimation = setInterval(AnimateSearch, 5);
+    currAnimation = setInterval(AnimateSearch, animationSpeed);
     animationControls.animationProgress.focus();
 }
 
@@ -373,12 +375,11 @@ function AnimateSearch() {
 // when animation progress is handled by user
 function handleAnimationProgress(value) {
     if (value < 0 || value > animationControls.max) return;
-    animationControls.value = value;
-    
     stateMachine.transition(APPSTATE.PAUSE);
-
+    console.log(animationControls.value, value)
     // if single stepping with arrow keys
     if (animationControls.value == value-1) {
+
         const {node, type} = animationQueue[animationControls.value];
         type == "visit" ? node.setVisited(true) : node.setPath(true);
 
@@ -410,6 +411,7 @@ function handleAnimationProgress(value) {
         }
     }
 
+    animationControls.value = value;
     if (value == animationControls.max) {
         stateMachine.transition(APPSTATE.PAUSE);
     }

@@ -17,7 +17,7 @@
     overflow: hidden;
     /* transition: .15s; */
     animation-delay: 0s;
-    animation-duration: .3s; 
+    animation-duration: .2s; 
     animation-iteration-count: 1;
     animation-play-state: running;
 }

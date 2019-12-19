@@ -27,7 +27,7 @@ class Node extends HTMLTableCellElement {
         }
     }
 
-    setVisited(value, animate) {
+    setVisited(value, animate = true) {
         const visited = Boolean(value);
 
         if (visited) {
