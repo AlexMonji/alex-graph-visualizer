@@ -60,7 +60,7 @@
 
 
 /* =============================== interactive animation progress bar =============================== */
-#play-controls {
+#animation-controls {
     display: flex;
     justify-content: center;
     align-items: center;
@@ -72,7 +72,7 @@
 }
 @media only screen and (max-device-width: 1380px)
 {
-  #play-controls {
+  #animation-controls {
     width: 100%;
   }
 }

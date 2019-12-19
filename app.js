@@ -1,15 +1,12 @@
 import Node from "./CustomElements/Node.js"
+import AnimationControls from "./CustomElements/AnimationProgress.js"
 import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
 import {DotProduct, Clamp, Fade} from "./util.js"
 
 let animationQueue = [];
-let animationProgress = null;
-let animationIndex = 0;
+let animationControls = null;
 let currAnimation = null;
 let currAlgorithm = null;
-
-let animationCounter = null;
-let animationCounterMax = null;
 
 // nodes
 let nodes = [];
@@ -182,11 +179,6 @@ function GenerateGrid() {
     let {width, height} = grid.getBoundingClientRect();
     const nodeSize = 24;
 
-    // // clear children
-    // while (this.grid.firstChild) {
-    //     this.grid.removeChild(grid.firstChild);
-    // }
-
     // make rows and cols odd in number
     const rows = Math.floor(height/nodeSize) % 2 ? Math.floor(height/nodeSize) : Math.floor(height/nodeSize)-1;
     const cols = Math.floor(width/nodeSize) % 2 ? Math.floor(width/nodeSize) : Math.floor(width/nodeSize)-1;
@@ -227,6 +219,7 @@ window.addEventListener("DOMContentLoaded", function() {
       document.querySelector("#weight summary").textContent = "Weights"
     }
 
+    // create nodes and add them to the grid
     nodes = GenerateGrid();
 
     // prevent contentmenu on node right click
@@ -236,28 +229,25 @@ window.addEventListener("DOMContentLoaded", function() {
         }
     }
 
-    // user actions
+    // === user actions ===
     document.onmouseup = handleMouseUp;
-    const playButton = document.getElementById("play-button");
-    playButton.onclick = () => handlePlay();
 
     // animation progress bar
-    animationProgress = document.getElementById("animation-progress");
-    animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value);
-    animationProgress.oninput = (evt) => UpdateAnimationProgressBar(evt.target.value);
-    animationCounter = document.getElementById("animation-index");
-    animationCounterMax = document.getElementById("animation-index-max");
+    animationControls = document.querySelector("animation-controls");
+    animationControls.animationProgress.onchange = (evt) => handleAnimationProgress(evt.target.value); ;
+    animationControls.playButton.onclick = () => handlePlay();
 
     // spacebar pauses and plays and decrements/increments animation progress when left and right arrow pressed
     document.onkeypress = (evt) => {
-        if (evt.keyCode == 32 && !playButton.disabled) handlePlay();
+        if (evt.keyCode == 32 && !animationControls.disabled) handlePlay();
     }
     document.onkeydown = (evt) => {
-        if (document.activeElement == animationProgress) return;
-        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationProgress.value) - 1);
-        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationProgress.value) + 1);
+        if (document.activeElement == animationControls.animationProgress) return;
+        if (evt.keyCode == 37) handleAnimationProgress(parseInt(animationControls.value) - 1);
+        if (evt.keyCode == 39) handleAnimationProgress(parseInt(animationControls.value) + 1);
     }
 
+    // search algorithms
     const BFSButton = document.getElementById("algorithm-BFS");
     BFSButton.onclick = () => RunAlgorithm(BFS);
     const DFSButton = document.getElementById("algorithm-DFS");
@@ -271,7 +261,7 @@ window.addEventListener("DOMContentLoaded", function() {
     const resetButton = document.getElementById("reset-button");
     resetButton.onclick = () => Reset(grid);
 
-
+    // maze and weight generation
     const generateWeightSelect = document.querySelector("#weight .details-body");
     [...generateWeightSelect.childNodes].forEach(option => option.onclick = (evt) => GenerateWeight(evt.target.value));
     const generateMazeSelect = document.querySelector("#maze .details-body");
@@ -353,29 +343,26 @@ function RunAlgorithm(algorithm) {
     // clean up visited nodes and reset animations & animation progress
     ClearVisited();
     animationQueue = [];
-    animationIndex = 0;
-    animationProgress.value = 0;
+    animationControls.value = 0;
     stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
     if (currAnimation) clearInterval(currAnimation); // if going from pause to play causes an animation to start, cancel it and start a new one
 
     // run algorithm and then animate
     animationQueue = algorithm(startNode, endNode, nodes);
     animationQueue.shift(); // get rid of start node;
-    const path = CreatePath(endNode)
+    const path = CreatePath(endNode);
     previousPath = path;
     animationQueue = animationQueue.concat(path); 
-    animationProgress.max = animationQueue.length;
+    animationControls.max = animationQueue.length;
     currAnimation = setInterval(AnimateSearch, 5);
-    animationProgress.focus();
+    animationControls.animationProgress.focus();
 }
 
 // animate algorithm search
 function AnimateSearch() {
-    if (animationIndex < animationQueue.length) {
-        animationProgress.value++;
-        const { node, type } = animationQueue[animationIndex++];
+    if (animationControls.value < animationQueue.length) {
+        const { node, type } = animationQueue[animationControls.value++];
         type == "visit" ? node.setVisited(true) : node.setPath(true);
-        UpdateAnimationProgressBar();
     } else {
         clearInterval(currAnimation);
         stateMachine.transition(APPSTATE.PAUSE);
@@ -385,21 +372,20 @@ function AnimateSearch() {
 
 // when animation progress is handled by user
 function handleAnimationProgress(value) {
-    if (value < 0 || value > animationProgress.max) return;
-    animationProgress.value = value;
-    UpdateAnimationProgressBar();
+    if (value < 0 || value > animationControls.max) return;
+    animationControls.value = value;
     
     stateMachine.transition(APPSTATE.PAUSE);
 
     // if single stepping with arrow keys
-    if (animationIndex == value-1) {
-        const {node, type} = animationQueue[animationIndex];
+    if (animationControls.value == value-1) {
+        const {node, type} = animationQueue[animationControls.value];
         type == "visit" ? node.setVisited(true) : node.setPath(true);
 
     }
-    else if (animationIndex == value+1) {
-        animationIndex = animationIndex - 1; // need to shift by 1 since array is 0 indexed
-        const {node, type} = animationQueue[animationIndex];
+    else if (animationControls.value == value+1) {
+        animationControls.value--;
+        const {node, type} = animationQueue[animationControls.value];
         node.clearAnimate();
         type == "visit" ? node.setVisited(false) : node.setPath(false);
 
@@ -423,9 +409,8 @@ function handleAnimationProgress(value) {
             }
         }
     }
-    animationIndex = value;
 
-    if (value == animationProgress.max) {
+    if (value == animationControls.max) {
         stateMachine.transition(APPSTATE.PAUSE);
     }
 }
@@ -462,21 +447,17 @@ function InstantAnimate() {
         }
     }))
     animationQueue = animationQueue.concat(previousPath); 
-    animationProgress.max = animationQueue.length;
-    animationProgress.value = animationQueue.length;
-    UpdateAnimationProgressBar();
-
+    animationControls.max = animationQueue.length;
+    animationControls.value = animationQueue.length;
 }
 
 // play button handler, get rid of this eventually
 function handlePlay() {
     // if at end of progress, restart if press play
-    if (animationProgress.value == animationProgress.max) {
-        animationIndex = 0;
-        animationProgress.value = 0;
+    if (animationControls.value == animationControls.max) {
+        animationControls.value = 0;
         ClearVisited();
         stateMachine.transition(APPSTATE.PLAYING_ANIMATION);
-        UpdateAnimationProgressBar();
         return;
     }
     if (stateMachine.state == APPSTATE.PLAYING_ANIMATION) {
@@ -506,24 +487,18 @@ function CreatePath(endNode) {
 // clear button handler, clears everything
 function Clear() {
     animationQueue = [];
-    animationIndex = 0;
-    animationProgress.value = 0;
-    animationProgress.max = 0;
     currAlgorithm = null;
+    animationControls.clear();
     ClearAll();
-    UpdateAnimationProgressBar();
     stateMachine.transition(APPSTATE.IDLE);
 }
 
 // reset button handler, clears everything except walls
 function Reset() {
     animationQueue = [];
-    animationIndex = 0;
-    animationProgress.value = 0;
-    animationProgress.max = 0;
+    animationControls.clear();
     currAlgorithm = null;
     ClearVisited();
-    UpdateAnimationProgressBar();
     stateMachine.transition(APPSTATE.IDLE);
 }
 
@@ -548,33 +523,18 @@ function ClearVisited() {
     }));
 }
 
-function UpdateAnimationProgressBar(value = null){
-    if (animationProgress.max == 0) {
-        animationProgress.style.background = `#fff`
-    } else {
-        if (value != null) animationProgress.value = value
-        animationProgress.style.background = `linear-gradient(to right, #ff0000 0%, #ff0000 ${((animationProgress.value/animationProgress.max)*100).toFixed(2)}%, #fff ${((animationProgress.value/animationProgress.max)*100).toFixed(2)}%, white 100%)`
-    }
-    animationCounter.textContent = animationProgress.value;
-    animationCounterMax.textContent = animationProgress.max;
-}
-
 function TogglePlayButton(toggle) {
-    const playButton = document.getElementById("play-button");
     switch(toggle) {
         case "play": 
-            playButton.className = "play";
-            playButton.disabled = false;
-            animationProgress.disabled = false;
+            animationControls.playButton.className = "play";
+            animationControls.disabled = false;
             break;
         case "pause": 
-            playButton.className = "pause";
-            playButton.disabled = false;
-            animationProgress.disabled = false;
+            animationControls.playButton.className = "pause";
+            animationControls.disabled = false;
             break;
         case "disable":
-            animationProgress.disabled = true;
-            playButton.disabled = true;
+            animationControls.disabled = true;
     } 
 }
 

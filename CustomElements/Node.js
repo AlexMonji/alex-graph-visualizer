@@ -32,14 +32,13 @@ class Node extends HTMLTableCellElement {
 
         if (visited) {
             this.classList.add(`visited`);
-            if (this.direction) this.classList.add(`${this.direction}`);
+            if (this._direction) this.classList.add(`${this._direction}`);
             if (animate) this.classList.add("animate");
         } 
         // reset styling
         else {
             this.classList.remove(`visited`);
-            this.classList.remove(`${this.direction}`);
-            this.direction = null;
+            this.classList.remove(`${this._direction}`);
         }
     }
 
