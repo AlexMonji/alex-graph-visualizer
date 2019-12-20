@@ -299,11 +299,11 @@ function NodeMouseEnter(event, node) {
             break;
         case APPSTATE.MOVE_START:
             if (node != endNode && !node.isWall) startNode = SetStartNode(node, startNode);
-            if (currAlgorithm) InstantAnimate();
+            InstantAnimate();
             break;
         case APPSTATE.MOVE_END:
             if (node != startNode && !node.isWall) endNode = SetEndNode(node, endNode);
-            if (currAlgorithm) InstantAnimate();
+            InstantAnimate();
             break;
     }
 }
@@ -328,7 +328,6 @@ function NodeMouseDown(event, node) {
             if (leftMouseDown) node.setIsWall(true);
             if (rightMouseDown) node.setIsWall(false);
             InstantAnimate();
-
         default:
             break;
     }
