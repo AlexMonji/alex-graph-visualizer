@@ -166,20 +166,12 @@ details {
     background-color:#2f6fe6;
 }
 
-output {
-    color: white;
-    text-align: left;
-    width: 50px;
-    margin-left: 5px;
-}
-
 /* =============================== interactive animation progress bar =============================== */
 #animation-controls {
     display: flex;
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-
     min-width: 440px;
     min-height: 40px;
     background-color: #2b4b86;
@@ -213,9 +205,17 @@ output {
     cursor: not-allowed;
 }
 
+output {
+    color: white;
+    text-align: left;
+    flex-grow: 1;
+    margin-left: 5px;
+}
+
+
 #animation-progress {
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
-    width: calc(100% - 140px); /* Specific width is required for Firefox. */
+    width: calc(100% - 150px); /* Specific width is required for Firefox. */
     min-width: 200px;
     flex-shrink: 1;
     background: #fff; /* Otherwise white in Chrome */
