@@ -71,6 +71,7 @@ const APPSTATE = Object.freeze({
         name: "IDLE", 
         prepareForEnterAll: () => {
             TogglePlayButton("disable");
+            animationControls.clear();
         },
         transitions: {
             IDLE: {name: "IDLE"},
@@ -214,7 +215,7 @@ function GenerateGrid() {
 // main
 window.addEventListener("DOMContentLoaded", function() {
 
-    // if screen is thin, change shorten text in generate buttons
+    // if screen is thin, shorten text in generate buttons
     if (window.innerWidth < 500) {
       document.querySelector("#maze summary").textContent = "Maze"
       document.querySelector("#weight summary").textContent = "Weights"
@@ -222,6 +223,16 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // create nodes and add them to the grid
     nodes = GenerateGrid();
+
+    // if window gets resized, recreate grid to fit new screen size
+    window.onresize = function() {
+        const grid = document.getElementById("grid");
+        while (grid.firstChild) {
+            grid.removeChild(grid.firstChild);
+        }
+        nodes = GenerateGrid();
+        stateMachine.transition(APPSTATE.IDLE);
+    }
 
     // prevent contentmenu on node right click
     document.oncontextmenu = function(evt){
@@ -552,8 +563,10 @@ function GenerateWeight(weightAlgorithm) {
 
 
     if(weightAlgorithm != "clear") algorithms[weightAlgorithm](); // run algorithm
-    stateMachine.transition(APPSTATE.PAUSE);
-    InstantAnimate(); // finish animation
+    if (currAlgorithm) {
+        stateMachine.transition(APPSTATE.PAUSE);
+        InstantAnimate(); // finish animation
+    }
 }
 
 function GenerateRandomWeight() {
