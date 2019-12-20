@@ -2,8 +2,8 @@ class AnimationControls extends HTMLElement {
 
     constructor() {
         super();
-        this.innerHTML = `<button id="play-button" class="play" disabled></button>
-                          <input id="animation-progress" type="range" value="0" min="0" max="0" step="1" disabled/>
+        this.innerHTML = `<button id="play-button" class="play" title="Can use spacebar to pause/play" disabled></button>
+                          <input id="animation-progress" type="range" value="0" min="0" max="0" step="1" title="Can use left and right arrow keys to interact" disabled/>
                           <output><span id="animation-index">0</span>/<span id="animation-index-max">0</span></output>`;
 
         this._max = 0;

@@ -81,7 +81,7 @@
         width: 100%;
         margin-bottom: 10px;
         padding: 0 5px;
-        min-height: 350px;
+        min-height: 390px;
       }
 
       #drop-downs {
@@ -238,6 +238,7 @@
             <label class="tooltiptext">A* - Guarantees shortest path. Uses a heuristic (node distance from target) to bias search towards target.</label>
           </div>
           <output style="text-align: center; display: inline-block; color: black; width: 100%; margin-top: 10px;">Cost of path:&nbsp;<span id="cost-of-path">0</span></output>
+          <div style="text-align: center; font-size: 14px; margin-top: 20px;">*Double click to instantly finish animation.</div>
         </section>
         <section id="legend">
           <h1 class="section-title">Legend</h1>
@@ -254,7 +255,7 @@
             <label>Wall - Hold left mouse to place<br/> Hold right mouse to delete</label>
           </div>
           <div class="legend-item">
-            <div class="node cost-6" style="flex-shrink: 0"></div>
+            <div class="node weight-6" style="flex-shrink: 0" title="This is a node of weight 6"></div>
             <label>Weighted Node - Weights range from 1 to 10 inclusive</label>
           </div>
         </section>

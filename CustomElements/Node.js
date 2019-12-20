@@ -14,17 +14,7 @@ class Node extends HTMLTableCellElement {
         this._direction = null;
  
         this.state = null;
-        this.cost = 1; // default one, unweighted
-    }
-
-    static get observedAttributes() {
-        return [];
-    }
-
-    attributeChangedCallback(name, oldValue, newValue) {
-        switch(name) {
-            default:
-        }
+        this.weight = 1; // default one, unweighted
     }
 
     setVisited(value, animate) {
@@ -42,7 +32,7 @@ class Node extends HTMLTableCellElement {
         }
     }
 
-    setIsWall(value) {
+    setWall(value) {
         this.isWall = value;
     }
 
@@ -122,6 +112,7 @@ class Node extends HTMLTableCellElement {
         } else {
             this.removeAttribute('isStart');
         }
+        this.updateTitle();
     }
       
     get isStart() {
@@ -135,6 +126,7 @@ class Node extends HTMLTableCellElement {
         } else {
             this.removeAttribute('isEnd');
         }    
+        this.updateTitle();
     }
       
     get isEnd() {
@@ -157,10 +149,33 @@ class Node extends HTMLTableCellElement {
         } else {
             this.removeAttribute('isWall');
         }
+        this.updateTitle();
     }
       
     get isWall() {
         return this.hasAttribute("isWall");
+    }
+
+    set weight(value) {
+        this._weight = value;
+        this.cost = parseInt(value);
+        this.updateTitle();
+    }
+
+    get weight() {
+        return this._weight;
+    }
+
+    updateTitle() {
+        if (this.hasAttribute('isStart')) {
+            this.title = "Start Node" 
+        } else if (this.hasAttribute('isEnd')) {
+            this.title = "End Node"
+        } else if (this.hasAttribute('isWall')) {
+            this.title = "Wall"
+        } else {
+            this.title = `Weight ${this.weight}`
+        }
     }
 }
 

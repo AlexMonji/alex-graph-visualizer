@@ -1,5 +1,5 @@
 import Node from "./CustomElements/Node.js"
-import AnimationControls from "./CustomElements/AnimationProgress.js"
+import AnimationControls from "./CustomElements/AnimationControls.js"
 import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
 import {DotProduct, Clamp, Fade} from "./util.js"
 
@@ -289,13 +289,13 @@ function NodeMouseEnter(event, node) {
     // wall drawing
     switch(stateMachine.state) {
         case APPSTATE.PAUSE:
-            if (leftMouseDown && node != startNode && node != endNode) node.setIsWall(true);
-            if (rightMouseDown) node.setIsWall(false);
+            if (leftMouseDown && node != startNode && node != endNode) node.setWall(true);
+            if (rightMouseDown) node.setWall(false);
             if (leftMouseDown || rightMouseDown) InstantAnimate();
             break;
         case APPSTATE.IDLE:
-            if (leftMouseDown && node != startNode && node != endNode) node.setIsWall(true);
-            if (rightMouseDown) node.setIsWall(false);
+            if (leftMouseDown && node != startNode && node != endNode) node.setWall(true);
+            if (rightMouseDown) node.setWall(false);
             break;
         case APPSTATE.MOVE_START:
             if (node != endNode && !node.isWall) startNode = SetStartNode(node, startNode);
@@ -319,14 +319,14 @@ function NodeMouseDown(event, node) {
     switch(stateMachine.state) {
         // wall drawing
         case APPSTATE.IDLE:
-            if (leftMouseDown) node.setIsWall(true);
-            if (rightMouseDown) node.setIsWall(false);
+            if (leftMouseDown) node.setWall(true);
+            if (rightMouseDown) node.setWall(false);
             break;
         case APPSTATE.PLAYING_ANIMATION:
             stateMachine.transition(APPSTATE.PAUSE);
         case APPSTATE.PAUSE:
-            if (leftMouseDown) node.setIsWall(true);
-            if (rightMouseDown) node.setIsWall(false);
+            if (leftMouseDown) node.setWall(true);
+            if (rightMouseDown) node.setWall(false);
             InstantAnimate();
         default:
             break;
@@ -350,6 +350,12 @@ function handleMouseUp(evt){
 }
 
 function RunAlgorithm(algorithm) {
+    // double click an algorithm to instantly finish
+    if (stateMachine.state == APPSTATE.PLAYING_ANIMATION && currAlgorithm == algorithm) {
+        InstantAnimate();
+        return;
+    }
+    
     currAlgorithm = algorithm;
     // clean up visited nodes and reset animations & animation progress
     ClearVisited();
@@ -486,7 +492,7 @@ function CreatePath(endNode) {
         node.isPath = true;
         if (node != startNode) { 
             pathQueue.push({node: node, type: "path"});
-            costOfPath += node.cost;
+            costOfPath += node.weight;
         }
     }
     document.getElementById("cost-of-path").textContent = costOfPath;
@@ -514,9 +520,9 @@ function Reset() {
 // remove walls
 function ClearAll() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        node.setIsWall(false);
         node.visited = false;
         node.from = null;
+        node.setWall(false);
         node.setVisited(false);
         node.setPath(false);
     }));
@@ -555,8 +561,8 @@ function GenerateWeight(weightAlgorithm) {
 
     // clear weights
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        node.classList.remove(`cost-${node.cost}`);
-        node.cost = 1;
+        node.classList.remove(`weight-${node.weight}`);
+        node.weight = 1;
         node.removeAttribute("weighted");
     }))
 
@@ -570,8 +576,8 @@ function GenerateWeight(weightAlgorithm) {
 
 function GenerateRandomWeight() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        node.cost = parseInt(Math.random()*10);
-        node.classList.add(`cost-${node.cost}`);
+        node.weight = parseInt(Math.random()*10);
+        node.classList.add(`weight-${node.weight}`);
         node.setAttribute("weighted", "weighted");
     }))
 }
@@ -619,9 +625,9 @@ function GeneratePerlinNoiseWeight() {
                     const AB = dotA + localXOffset * (dotB - dotA); // interpolate between top left and top right
                     const CD = dotC + localXOffset * (dotD - dotC); // interpolate between bottom left and bottom right
                     const value = AB + localYOffset * (CD - AB);
-                    const nodeCost = Math.floor(Clamp(value*5+5,1, 10.99));
-                    nodes[actualRow][actualCol].cost = nodeCost;
-                    nodes[actualRow][actualCol].classList.add(`cost-${nodeCost}`);
+                    const nodeWeight = Math.floor(Clamp(value*5+5,1, 10.99));
+                    nodes[actualRow][actualCol].weight = nodeWeight;
+                    nodes[actualRow][actualCol].classList.add(`weight-${nodeWeight}`);
                     nodes[actualRow][actualCol].setAttribute("weighted", "weighted");
                 }
             }   
@@ -637,7 +643,7 @@ function GenerateMaze(mazeAlgorithm) {
         very_sparse: () => GenerateSparseMaze(1)
     }
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        node.setIsWall(false);
+        node.setWall(false);
         node.visited = false;
         node.from = null;
         node.setVisited(false);
@@ -700,9 +706,9 @@ function GeneratePrimMaze(mazeAlgorithm) {
 
     // actually set the walls
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
-        if (node.state == "blocked") node.setIsWall(true);
+        if (node.state == "blocked") node.setWall(true);
     }))
-    endNode.setIsWall(false);
+    endNode.setWall(false);
 }
 
 // same as above, but ignores if frontier node has already been visited and runs twice to get some interesting walls and pits
@@ -751,7 +757,7 @@ function GenerateSparseMaze(runs) {
 
         // set walls
         nodes.forEach(nodeRow => nodeRow.forEach(node => {
-            if (node.state == "blocked") node.setIsWall(true);
+            if (node.state == "blocked") node.setWall(true);
         }))
     }
 
@@ -765,19 +771,19 @@ function GenerateSparseMaze(runs) {
                 }
             })
             if (island) { 
-                node.setIsWall(false);
+                node.setWall(false);
             }
         }
     }))
 
-    endNode.setIsWall(false);
+    endNode.setWall(false);
 }
 
 function GenerateRandomMaze() {
     nodes.forEach(nodeRow => nodeRow.forEach(node => {
         if (node != startNode && node != endNode) {
             if (Math.random() > .7) {
-                node.setIsWall(true)      
+                node.setWall(true)      
             }
         }
     })) 

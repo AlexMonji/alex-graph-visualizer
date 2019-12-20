@@ -27,74 +27,74 @@
     opacity: 1;
 }
 
-.cost-1 {
+.weight-1 {
     background-color: var(--weight-color);
     opacity: 0;
 }
-.cost-2 {
+.weight-2 {
     background-color: var(--weight-color);
     opacity: .1;
 }
-.cost-3 {
+.weight-3 {
     background-color: var(--weight-color);
     opacity: .2;
 }
-.cost-4 {
+.weight-4 {
     background-color: var(--weight-color);
     opacity: .3;
 }
-.cost-5 {
+.weight-5 {
     background-color: var(--weight-color);
     opacity: .4;
 }
-.cost-6 {
+.weight-6 {
     background-color: var(--weight-color);
     opacity: .5;
 }
-.cost-7 {
+.weight-7 {
     background-color: var(--weight-color);
     opacity: .6;
 }
-.cost-8 {
+.weight-8 {
     background-color: var(--weight-color);
     opacity: .7;
 }
-.cost-9 {
+.weight-9 {
     background-color: var(--weight-color);
     opacity: .8;
 }
-.cost-10 {
+.weight-10 {
     background-color: var(--weight-color);
     opacity: .9;
 }
-.visited.cost-1 {
+.visited.weight-1 {
     opacity: .28;
 }
-.visited.cost-2 {
+.visited.weight-2 {
     opacity: .36;
 }
-.visited.cost-3 {
+.visited.weight-3 {
     opacity: .44;
 }
-.visited.cost-4 {
+.visited.weight-4 {
     opacity: .52;
 }
-.visited.cost-5 {
+.visited.weight-5 {
     opacity: .60;
 }
-.visited.cost-6 {
+.visited.weight-6 {
     opacity: .68;
 }
-.visited.cost-7 {
+.visited.weight-7 {
     opacity: .76;
 }
-.visited.cost-8 {
+.visited.weight-8 {
     opacity: .84;
 }
-.visited.cost-9 {
+.visited.weight-9 {
     opacity: .92;
 }
-.visited.cost-10 {
+.visited.weight-10 {
     opacity: 1;
 }
 
@@ -161,34 +161,34 @@
     background-size: 24px 24px;
 }
 
-.path.cost-1 {
+.path.weight-1 {
     opacity: .64;
 }
-.path.cost-2 {
+.path.weight-2 {
     opacity: .68;
 }
-.path.cost-3 {
+.path.weight-3 {
     opacity: .72;
 }
-.path.cost-4 {
+.path.weight-4 {
     opacity: .76;
 }
-.path.cost-5 {
+.path.weight-5 {
     opacity: .80;
 }
-.path.cost-6 {
+.path.weight-6 {
     opacity: .84;
 }
-.path.cost-7 {
+.path.weight-7 {
     opacity: .88;
 }
-.path.cost-8 {
+.path.weight-8 {
     opacity: .92;
 }
-.path.cost-9 {
+.path.weight-9 {
     opacity: 96;
 }
-.path.cost-10 {
+.path.weight-10 {
     opacity: 1;
 }
 
