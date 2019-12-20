@@ -179,12 +179,14 @@ output {
     justify-content: center;
     align-items: center;
     flex-wrap: wrap;
-    width: 50%;
+    max-width: 50%;
+    min-width: 480px;
     min-height: 40px;
     background-color: #2b4b86;
     padding: 5px;
+    flex-grow: 1;
 }
-@media only screen and (max-device-width: 1380px)
+@media only screen and (max-device-width: 1400px)
 {
   #animation-controls {
     width: 100%;
@@ -213,7 +215,7 @@ output {
 
 #animation-progress {
     -webkit-appearance: none; /* Hides the slider so that custom slider can be made */
-    width: calc(100% - 200px); /* Specific width is required for Firefox. */
+    width: calc(100% - 140px); /* Specific width is required for Firefox. */
     min-width: 200px;
     flex-shrink: 1;
     background: #fff; /* Otherwise white in Chrome */

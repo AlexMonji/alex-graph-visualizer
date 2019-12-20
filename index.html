@@ -57,6 +57,14 @@
         padding: 5px;
       }
 
+      #header-controls {
+        display: flex; 
+        width: calc(100% - 220px); 
+        justify-content: flex-start; 
+        align-items: center; 
+        flex-wrap: wrap;
+      }
+
       main {
         height: calc(100% - 80px);
         min-height: 600px;
@@ -66,7 +74,7 @@
 
       #sidebar-container {
         height: 100%;
-        width: 300px;
+        width: 280px;
         background-color: white;
         padding: 10px 0px 10px 10px;
         display: flex;
@@ -141,8 +149,15 @@
         table-layout: fixed;
       }
 
-      @media only screen and (max-device-width: 1380px)
+      @media only screen and (max-device-width: 1400px)
       {
+        #header-controls {
+          width: 100%;
+          justify-content: center;
+        }
+        #logo {
+          display: none;
+        }
         header {
           height: 120px;
         }
@@ -179,41 +194,45 @@
     </style>
     <link rel="stylesheet" type="text/css" href="controls.css">
     <link rel="stylesheet" type="text/css" href="node.css">
+    <link href="https://fonts.googleapis.com/css?family=Lobster&display=swap" rel="stylesheet">
     <script type="module" src="app.js"></script>
   </head>
   <body>
     <header>
-      <button id="reset-button">Clear Search</button>
-      <button id="clear-button">Clear Walls</button>
-      <details id="weight">
-        <summary>Generate Weights</summary>
-        <div class="details-body">
-          <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
-          <option value="random" class="noDrag" tabindex="2">Random</option>
-          <option value="perlin" class="noDrag" tabindex="3">Perlin Noise</option>
-        </div>
-      </details>
-      <details id="maze">
-        <summary>Generate Maze</summary>
-        <div class="details-body">
-          <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
-          <option value="random" class="noDrag" selected tabindex="2">Random</option>
-          <option value="prim" class="noDrag" selected tabindex="3">Modified Prim's</option>
-          <option value="sparse" class="noDrag" selected tabindex="4">Sparse</option>
-          <option value="very_sparse" class="noDrag" selected tabindex="5">Very Sparse</option>
-        </div>
-      </details>
-      <animation-controls id="animation-controls"></animation-controls>
-      <!-- <div class="slider-container">
-        <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
-        <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
-        <div class="slider-labels">Grid Size</div>
-      </div> -->
-      <!--div class="slider-container">
-        <div class="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div>
-        <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
-        <div class="slider-labels">Animation Speed</div>
-      </div-->
+      <div id="header-controls">
+        <button id="reset-button">Clear Search</button>
+        <button id="clear-button">Clear Walls</button>
+        <details id="weight">
+          <summary>Generate Weights</summary>
+          <div class="details-body">
+            <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
+            <option value="random" class="noDrag" tabindex="2">Random</option>
+            <option value="perlin" class="noDrag" tabindex="3">Perlin Noise</option>
+          </div>
+        </details>
+        <details id="maze">
+          <summary>Generate Maze</summary>
+          <div class="details-body">
+            <option value="clear" class="noDrag" selected tabindex="1">Clear</option>
+            <option value="random" class="noDrag" selected tabindex="2">Random</option>
+            <option value="prim" class="noDrag" selected tabindex="3">Modified Prim's</option>
+            <option value="sparse" class="noDrag" selected tabindex="4">Sparse</option>
+            <option value="very_sparse" class="noDrag" selected tabindex="5">Very Sparse</option>
+          </div>
+        </details>
+        <animation-controls id="animation-controls"></animation-controls>
+        <!-- <div class="slider-container">
+          <div class="slider-labels"><span>Small</span><span>Normal</span><span>Large</span></div>
+          <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
+          <div class="slider-labels">Grid Size</div>
+        </div> -->
+        <!--div class="slider-container">
+          <div class="slider-labels"><span>Slow</span><span>Normal</span><span>Fast</span></div>
+          <input class="slider" id="grid-size" type="range" min="0" max="2" value="1" step="1">
+          <div class="slider-labels">Animation Speed</div>
+        </div-->
+      </div>
+      <div id="logo" style="width: 220px; font-size: 35px; color: white; font-family: 'Lobster', cursive;">Alex Visualizer</div>
     </header>
     <main>
       <aside id="sidebar-container">
