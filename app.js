@@ -242,11 +242,17 @@ window.addEventListener("DOMContentLoaded", function() {
         isMobile = MobileCheck(); // user agent is a mobile device
         if (isMobile) MobileText(); //set mobile text if needed
 
+        // generate new grid and reset everything
         const grid = document.getElementById("grid");
         while (grid.firstChild) {
             grid.removeChild(grid.firstChild);
         }
         nodes = GenerateGrid();
+        currAlgorithm = null;
+        if (currAnimation) {
+            clearInterval(currAnimation);
+        }
+        currAnimation = null;
         stateMachine.transition(APPSTATE.IDLE);
     }
 
