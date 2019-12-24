@@ -227,7 +227,7 @@ window.addEventListener("DOMContentLoaded", function() {
 
     isMobile = MobileCheck(); // user agent is a mobile device
     MobileText(); //set mobile text if needed
-    
+
     // if screen is thin, shorten text in generate buttons
     if (window.innerWidth < 500) {
       document.querySelector("#maze summary").textContent = "Maze"
@@ -355,7 +355,6 @@ function NodeMouseDownMobile(event, node) {
     const leftMouseDown = stateMachine.mouseState.leftMouseDown;
     const rightMouseDown = stateMachine.mouseState.rightMouseDown;
 
-
     switch(stateMachine.state) {
         // wall drawing
         case APPSTATE.IDLE:
@@ -364,8 +363,8 @@ function NodeMouseDownMobile(event, node) {
         case APPSTATE.PLAYING_ANIMATION:
             stateMachine.transition(APPSTATE.PAUSE);
         case APPSTATE.PAUSE:
-            if (leftMouseDown) node.setWall(true);
-            if (rightMouseDown) node.setWall(false);
+            if (leftMouseDown && node != endNode && node != startNode) node.setWall(true);
+            if (rightMouseDown && node != endNode && node != startNode) node.setWall(false);
             InstantAnimate();
             break;
         case APPSTATE.MOVE_START:
