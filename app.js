@@ -1,7 +1,7 @@
 import Node from "./CustomElements/Node.js"
 import AnimationControls from "./CustomElements/AnimationControls.js"
 import {BFS, DFS, Dijkstra, AStar} from "./algorithms.js"
-import {DotProduct, Clamp, Fade} from "./util.js"
+import {DotProduct, Clamp, Fade, MobileCheck} from "./util.js"
 
 let animationQueue = [];
 let animationControls = null;
@@ -15,6 +15,8 @@ let startNode = null;
 let endNode = null;
 
 let previousPath = []; // keep track of previous path for efficient clear
+
+let isMobile = false;
 
 class StateMachine {
     constructor (initialState) {
@@ -47,6 +49,7 @@ class StateMachine {
 
         
         if (this.state != APPSTATE[state.name]) this.prevState = this.state; // don't set prevState if next state is the same as current
+        console.log(state.name)
         this.state = APPSTATE[state.name];
     }
 
@@ -192,9 +195,16 @@ function GenerateGrid() {
         for (let col = 0; col < cols; col++) {
             const newNode = new Node(row, col, nodes);
 
-            // DOM Node setup
-            newNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(evt, newNode));
-            newNode.addEventListener("mousedown",  (evt) => NodeMouseDown(evt, newNode));
+            // if on mobile
+            if (isMobile) {
+                newNode.addEventListener("mousedown",  (evt) => NodeMouseDownMobile(evt, newNode));
+            } 
+            // if on desktop
+            else {
+                newNode.addEventListener("mouseenter", (evt) => NodeMouseEnter(evt, newNode));
+                newNode.addEventListener("mousedown",  (evt) => NodeMouseDown(evt, newNode));
+            }
+
             //newNode.setAttribute('size', nodeSize);
             newDOMRow.appendChild(newNode);
 
@@ -215,6 +225,9 @@ function GenerateGrid() {
 // main
 window.addEventListener("DOMContentLoaded", function() {
 
+    isMobile = MobileCheck(); // user agent is a mobile device
+    MobileText(); //set mobile text if needed
+    
     // if screen is thin, shorten text in generate buttons
     if (window.innerWidth < 500) {
       document.querySelector("#maze summary").textContent = "Maze"
@@ -226,6 +239,9 @@ window.addEventListener("DOMContentLoaded", function() {
 
     // if window gets resized, recreate grid to fit new screen size
     window.onresize = function() {
+        isMobile = MobileCheck(); // user agent is a mobile device
+        if (isMobile) MobileText(); //set mobile text if needed
+
         const grid = document.getElementById("grid");
         while (grid.firstChild) {
             grid.removeChild(grid.firstChild);
@@ -333,7 +349,54 @@ function NodeMouseDown(event, node) {
     }
 }
 
+
+function NodeMouseDownMobile(event, node) {
+    stateMachine.handleMouseState(event);
+    const leftMouseDown = stateMachine.mouseState.leftMouseDown;
+    const rightMouseDown = stateMachine.mouseState.rightMouseDown;
+
+
+    switch(stateMachine.state) {
+        // wall drawing
+        case APPSTATE.IDLE:
+            if (leftMouseDown && node != endNode && node != startNode) node.isWall ? node.setWall(false) : node.setWall(true);
+            break;
+        case APPSTATE.PLAYING_ANIMATION:
+            stateMachine.transition(APPSTATE.PAUSE);
+        case APPSTATE.PAUSE:
+            if (leftMouseDown) node.setWall(true);
+            if (rightMouseDown) node.setWall(false);
+            InstantAnimate();
+            break;
+        case APPSTATE.MOVE_START:
+            if (node == endNode) return;
+            if (node != startNode) {
+                if (node.isWall) node.setWall(false);
+                startNode = SetStartNode(node, startNode);
+            }
+            stateMachine.transition(stateMachine.prevState);
+            return;
+        case APPSTATE.MOVE_END:
+            if (node == startNode) return;
+            if (node != endNode) {
+                if (node.isWall) node.setWall(false);
+                endNode = SetEndNode(node, endNode);
+            }
+            stateMachine.transition(stateMachine.prevState);
+            return;
+        default:
+            break;
+    }
+
+    if (node == startNode) { stateMachine.transition(APPSTATE.MOVE_START); } 
+    if (node == endNode) { stateMachine.transition(APPSTATE.MOVE_END); }
+
+
+}
+
 function handleMouseUp(evt){
+    if (isMobile) return; // don't immediately exit MOVE_END/MOVE_START if mobile
+
     switch(stateMachine.state) {
         case APPSTATE.MOVE_END:
         case APPSTATE.MOVE_START:
@@ -787,4 +850,10 @@ function GenerateRandomMaze() {
             }
         }
     })) 
+}
+
+function MobileText() {
+    document.getElementById("start-node-legend").textContent = "Start Node - Tap then tap another node to move"
+    document.getElementById("end-node-legend").textContent = "End Node - Tap then tap another node to move"
+    document.getElementById("wall-node-legend").textContent = "Wall - Tap to set, tap again to unset"
 }

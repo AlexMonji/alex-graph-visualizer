@@ -4,7 +4,7 @@
     <meta charset="utf-8">
     <title>Graph Search Visualizer by Alex Monji</title>
     <link rel="icon" type="image/png" href="favicon.png">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="viewport" content="width=650, initial-scale=1.0">
     <meta name="description" content="Frontend Practice Through Graph Search Visualization">
     <meta name="author" content="Alex Monji">
     <style>
@@ -74,7 +74,7 @@
 
       main {
         height: calc(100% - 80px);
-        min-height: 600px;
+        min-height: 640px;
         width: 100vw;
         display: flex;
       }
@@ -126,6 +126,10 @@
         justify-content: flex-start;
         align-items: center;
         padding: 5px;
+      }
+
+      .legend-item .node {
+        flex-shrink: 0;
       }
 
       .legend-item label {
@@ -270,18 +274,18 @@
           <h1 class="section-title">Legend</h1>
           <div class="legend-item">
             <div class="node" isStart></div>
-            <label>Start Node - Drag to move</label>
+            <label id="start-node-legend">Start Node - Drag to move</label>
           </div>
           <div class="legend-item">
             <div class="node" isEnd></div>
-            <label>End Node - Drag to move</label>
+            <label id="end-node-legend">End Node - Drag to move</label>
           </div>
           <div class="legend-item">
             <div class="node" isWall></div>
-            <label>Wall - Hold left mouse to place<br/> Hold right mouse to delete</label>
+            <label id="wall-node-legend">Wall - Hold left mouse to place<br/> Hold right mouse to delete</label>
           </div>
           <div class="legend-item">
-            <div class="node weight-6" style="flex-shrink: 0" title="This is a node of weight 6"></div>
+            <div class="node weight-6" title="This is a node of weight 6"></div>
             <label>Weighted Node - Weights range from 1 to 10 inclusive</label>
           </div>
         </section>
