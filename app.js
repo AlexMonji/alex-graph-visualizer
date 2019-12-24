@@ -374,6 +374,7 @@ function NodeMouseDownMobile(event, node) {
                 startNode = SetStartNode(node, startNode);
             }
             stateMachine.transition(stateMachine.prevState);
+            InstantAnimate();
             return;
         case APPSTATE.MOVE_END:
             if (node == startNode) return;
@@ -382,6 +383,7 @@ function NodeMouseDownMobile(event, node) {
                 endNode = SetEndNode(node, endNode);
             }
             stateMachine.transition(stateMachine.prevState);
+            InstantAnimate();
             return;
         default:
             break;
