@@ -369,8 +369,7 @@ function NodeMouseDownMobile(event, node) {
         case APPSTATE.PLAYING_ANIMATION:
             stateMachine.transition(APPSTATE.PAUSE);
         case APPSTATE.PAUSE:
-            if (leftMouseDown && node != endNode && node != startNode) node.setWall(true);
-            if (rightMouseDown && node != endNode && node != startNode) node.setWall(false);
+            if (leftMouseDown && node != endNode && node != startNode) node.isWall ? node.setWall(false) : node.setWall(true);
             InstantAnimate();
             break;
         case APPSTATE.MOVE_START:
