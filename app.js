@@ -240,7 +240,10 @@ window.addEventListener("DOMContentLoaded", function() {
     // if window gets resized, recreate grid to fit new screen size
     window.onresize = function() {
         isMobile = MobileCheck(); // user agent is a mobile device
-        if (isMobile) MobileText(); //set mobile text if needed
+        if (isMobile) {
+            MobileText(); //set mobile text if needed
+            return; // don't clear grid because resize happens easily in mobile
+        }
 
         // generate new grid and reset everything
         const grid = document.getElementById("grid");
